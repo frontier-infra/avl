@@ -1,0 +1,25 @@
+# AVL Manifest
+# Discovery file for AI agents. Like robots.txt but for agent-native views.
+
+version: 1
+content-type: text/agent-view; version=1
+
+# Discovery mechanisms supported
+discovery:
+  - suffix          # GET /<route>.agent
+  - accept-header   # Accept: text/agent-view
+  - native          # GET /agent/<route>
+
+# Auth
+session:
+  cookie: holace_session
+  scope: per-user
+
+# Routes (pattern, method, public-or-auth)
+routes:
+  - GET /dashboard.agent
+  - GET /journey/{id}.agent
+
+# Spec
+spec: /specs/avl-agent-view-layer.md
+contact: agent-views@argentos.ai

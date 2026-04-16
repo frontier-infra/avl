@@ -1,0 +1,24 @@
+{
+  "name": "avl",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent View Layer — producer-side rendering for AI agents",
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "lint": "next lint",
+    "demo:curl": "echo 'Try: curl -s http://localhost:3002/dashboard.agent' && echo '     curl -s -H \"Accept: text/agent-view\" http://localhost:3002/dashboard'"
+  },
+  "dependencies": {
+    "next": "^16.2.4",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.3"
+  }
+}
