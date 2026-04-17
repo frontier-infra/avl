@@ -12,7 +12,7 @@ const RUNTIME_PREFIX = "/agent";
  *   1. URL suffix: any path ending in `.agent`        -> rewrite to /agent/<path>
  *   2. Content negotiation: Accept: text/agent-view   -> rewrite to /agent/<path>
  */
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const path = url.pathname;
 
