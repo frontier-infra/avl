@@ -36,7 +36,7 @@
 - Mock action endpoint: `app/api/journey/[id]/advance/route.ts` to
   exercise the `@actions` affordances.
 - Site manifest: `public/agent.txt`.
-- Adopted the HoLaCe ops/ pattern as a placeholder. Pinned reconciliation
+- Adopted the maintainer Blueprint ops/ pattern as a placeholder. Pinned reconciliation
   against Jason's "maintainer Blueprint" repo (URL pending).
 
 ### What's pending

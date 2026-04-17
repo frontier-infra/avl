@@ -4,10 +4,10 @@
 
 This is the operational source of truth for AVL development.
 
-> **Note:** This ops/ scaffold is derived from the HoLaCe ops pattern as a
-> placeholder. The canonical pattern lives in Jason's
-> "maintainer Blueprint" repo and should be reconciled here once that repo
-> is accessible from this environment. See `projects/ACTIVE.md` § Pinned.
+> **Note:** This ops/ scaffold is derived from Jason's "maintainer Blueprint"
+> pattern as a placeholder. The canonical version lives in the maintainer
+> Blueprint repo and should be reconciled here once accessible from this
+> environment. See `projects/ACTIVE.md` § Pinned.
 
 ## How to Use This
 

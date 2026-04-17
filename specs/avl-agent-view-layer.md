@@ -8,8 +8,9 @@
 | Status | Draft v0.1 |
 | Authors | Argent OS |
 | Date | 2026-04-16 |
-| Pilot | `/home/user/avl` |
-| Reference impl | Next.js 15 / App Router |
+| Reference impl | Next.js 16 / App Router |
+| Companion docs | `avl-thesis.md` (problem/solution thesis) |
+| | `avl-auth-thesis.md` (authentication model) |
 
 ---
 
@@ -44,15 +45,15 @@ first-class translation owned by the application, not the consumer.
 
 AVL is differentiated from prior art on five dimensions.
 
-| System | Direction | Granularity | Intent | Actions |
-|---|---|---|---|---|
-| Cloudflare AutoRAG / Jina Reader / Firecrawl | **Scraper** | Page | No | No |
-| `llms.txt` | Producer | Site | Light | No |
-| OpenAPI / GraphQL | Producer | API surface | No | Yes |
-| Schema.org / microformats | Producer | DOM | SEO-flavored | No |
-| ARIA | Producer | DOM elements | A11y | Limited |
-| MCP | Producer | Tool surface | Yes | Yes |
-| **AVL** | **Producer** | **Page** | **Yes** | **Yes** |
+| System | Direction | Granularity | Intent | Actions | Auth-scoped |
+|---|---|---|---|---|---|
+| Cloudflare AutoRAG / Jina Reader / Firecrawl | **Scraper** | Page | No | No | No |
+| `llms.txt` | Producer | Site | Light | No | No |
+| OpenAPI / GraphQL | Producer | API surface | No | Yes | Sometimes |
+| Schema.org / microformats | Producer | DOM | SEO-flavored | No | No |
+| ARIA | Producer | DOM elements | A11y | Limited | No |
+| MCP | Producer | Tool surface | Yes | Yes | Yes |
+| **AVL** | **Producer** | **Page** | **Yes** | **Yes** | **Yes** |
 
 AVL's wedge:
 
@@ -125,7 +126,31 @@ human readability but order-insignificant for parsing.
 `@meta` and `@intent` are required. All other sections are optional. A read-only
 list page may omit `@actions`. A pure narrative page may omit `@state`.
 
-### 3.3 TOON Encoding for `@state`
+### 3.3 `@meta` Fields
+
+| Field | Required | Description |
+|---|---|---|
+| `v` | Yes | Format version (currently `1`) |
+| `route` | Yes | The canonical route path |
+| `generated` | Yes | ISO 8601 timestamp of document generation |
+| `status` | No | HTTP-analogous status code. Omit for `200` (success). |
+| `ttl` | No | Cache lifetime hint (e.g., `30s`, `5m`) |
+| `auth` | No | Informational rendering identity (e.g., `session(admin:42)`) |
+| `redacted` | No | Array of field paths excluded from `@state` |
+
+**Status codes:**
+
+| Status | When |
+|---|---|
+| *(omitted)* / `200` | Normal successful render |
+| `401` | No valid session — authentication required |
+| `403` | Session valid but user lacks permission for this route |
+| `404` | No agent view registered for this route |
+
+Error responses (401, 403, 404) SHOULD include `@meta` and `@intent` only.
+The `@intent.purpose` field describes the error condition.
+
+### 3.4 TOON Encoding for `@state`
 
 The `@state` section uses **TOON** (Token-Oriented Object Notation) for tabular
 data. TOON is roughly 50–70% more token-efficient than equivalent JSON.
@@ -153,6 +178,22 @@ journeys[3]{id,client,stage}:
   J-103,Vega v Gamma,Treatment
 ```
 
+**Nested object:**
+```
+config:
+  theme: dark
+  notifications:
+    email: true
+    sms: false
+```
+
+**Boolean / number scalars:**
+```
+active: true
+retry_count: 3
+score: 0.87
+```
+
 **Quoting:** Strings containing `"`, `,`, or newlines must be double-quoted.
 Within quoted strings, `"` is escaped as `\"` and `\` as `\\`.
 
@@ -160,7 +201,7 @@ Within quoted strings, `"` is escaped as `\"` and `\` as `\\`.
 
 **Dates:** ISO 8601.
 
-### 3.4 Markdown for `@context`
+### 3.5 Markdown for `@context`
 
 `@context` is GitHub-flavored Markdown, blockquote-prefixed (`> `). Used for:
 
@@ -171,7 +212,7 @@ Within quoted strings, `"` is escaped as `\"` and `\` as `\\`.
 This is the section that captures the "so what" — the layer humans add when
 explaining what the data means to a colleague.
 
-### 3.5 Action Schema
+### 3.6 Action Schema
 
 Each action declares a callable affordance:
 
@@ -186,7 +227,7 @@ Each action declares a callable affordance:
 
 `href` may use `{param}` placeholders matching state fields or route params.
 
-### 3.6 Navigation Graph
+### 3.7 Navigation Graph
 
 ```
 @nav
@@ -243,7 +284,9 @@ version: 1
 content-type: text/agent-view; version=1
 discovery: [suffix, accept-header]
 session:
-  cookie: holace_session
+  mechanisms: [cookie, bearer]
+  cookie: session_token
+  bearer_prefix: Bearer
 routes:
   - GET /dashboard.agent
   - GET /journey/{id}.agent
@@ -253,74 +296,135 @@ routes:
 
 ## 5. Authentication
 
-AVL inherits the host application's existing session model. No new auth
-surface.
+> Full argument: `avl-auth-thesis.md`
 
-The `@meta.auth` field declares the rendering identity (informational,
-non-cryptographic):
+### 5.1 Core Principle — Delegate, Not Principal
+
+The AI agent is not a new identity. It is a delegate of an existing human
+session. The agent inherits the user's role, permissions, and data access.
+It sees exactly what the user sees — no more, no less.
+
+AVL inherits the host application's existing session model. No new auth
+surface. No new token format. The host app already solved authentication;
+AVL provides one contract:
+
+```typescript
+resolveSession: (req: Request) => Promise<AgentSession | null>
+```
+
+The host implements this function. AVL calls it and renders accordingly.
+
+### 5.2 Delegation Mechanisms
+
+Three delivery mechanisms serve one identity model:
+
+| Mechanism | When | How |
+|---|---|---|
+| **Cookie** | Browser-embedded agents | Cookie is already present on the request |
+| **Bearer token** | Local AI, CLI tools, MCP clients | `Authorization: Bearer <token>` — host resolves to same session |
+| **OAuth** | Third-party AI services | Standard OAuth2 delegation flow |
+
+All three resolve to the same `AgentSession`. The delivery mechanism
+varies; the security invariant does not.
+
+### 5.3 Surface Equivalence
+
+The security invariant (see also §10.5):
+
+- Every `@state` field is visible to this user in the human UI
+- Every `@actions` entry corresponds to a UI affordance the user can invoke
+
+If either fails, the AVL view is leaking. This holds regardless of which
+delegation mechanism delivered the session.
+
+### 5.4 `@meta.auth`
+
+The `auth` field in `@meta` is informational, not cryptographic:
 
 ```
 @meta
   auth: session(attorney:42)
 ```
 
-For headless agent contexts, applications MAY mint scoped agent tokens via
-existing OAuth flows. AVL itself defines no new token format.
+It tells the consuming agent "this document was rendered for this
+principal." It does not prove it. It aids debugging and audit logging.
+
+### 5.5 RBAC Filtering
 
 `@actions` MUST be filtered server-side per role. A paralegal's
-`/dashboard.agent` will NOT include `delegate(id, user_id)`.
+`/dashboard.agent` will NOT include `delegate(id, user_id)`. The absence
+of an action IS the authorization signal — if it's not listed, the user
+can't do it.
 
 ---
 
 ## 6. Authoring API
 
-In Next.js App Router, colocate an `agent.ts` next to `page.tsx`:
+Colocate an `agent.ts` next to `page.tsx`. Import from the `@frontier-infra/avl` package:
 
 ```ts
 // app/dashboard/agent.ts
-import { defineAgentView } from "@/lib/avl";
+import { defineAgentView } from "@frontier-infra/avl";
 
 export default defineAgentView({
   intent: {
-    purpose: "Active case dashboard for personal-injury matters",
-    audience: ["attorney", "paralegal"],
-    capability: ["review", "triage", "advance"],
+    purpose: "Project dashboard for active accounts",
+    audience: ["admin", "member"],
+    capability: ["review", "manage", "export"],
   },
   state: async ({ user }) => ({
-    journeys: await getJourneys({ userId: user.id }),
+    projects: await getProjects({ userId: user.id }),
   }),
   actions: ({ user }) => [
-    { id: "view_journey", method: "GET", href: "/journey/{id}.agent" },
-    user.role === "attorney"
-      ? { id: "advance_stage", method: "POST", href: "/api/journey/{id}/advance" }
+    { id: "view_project", method: "GET", href: "/project/{id}.agent" },
+    user.role === "admin"
+      ? { id: "advance_stage", method: "POST", href: "/api/project/{id}/advance" }
       : null,
   ],
   context: ({ state }) =>
-    `${state.journeys.length} active matters.`,
+    `${state.projects.length} active projects.`,
   nav: {
     parents: ["/"],
-    drilldown: "/journey/{id}",
+    drilldown: "/project/{id}",
   },
   meta: { ttl: "30s" },
 });
 ```
 
-The pilot routes everything through a single catch-all
-(`app/agent/[[...path]]/route.ts`) plus a registry of `pattern → view`
-entries. Production implementations may prefer build-time route discovery.
+Wire the catch-all route handler using the framework adapter:
+
+```ts
+// app/agent/[[...path]]/route.ts
+import { createAgentViewHandler } from "@frontier-infra/avl/next";
+
+export const GET = createAgentViewHandler({
+  resolveSession: async (req) => {
+    // Your auth logic — cookie, bearer token, OAuth
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return null;
+    return { id: session.user.id, role: session.user.role, name: session.user.name };
+  },
+});
+```
+
+The route handler resolves the path, matches it to a registered agent view,
+calls `resolveSession`, renders the view, and serializes the response.
+Production implementations may prefer build-time route discovery over
+manual registry.
 
 ---
 
 ## 7. Action Semantics
 
 AVL `@actions` are **descriptive by default**. The agent calls them via
-standard `fetch` + the existing session cookie. AVL defines no new dispatch
-protocol.
+standard `fetch` + the existing session credential (cookie, bearer token,
+or OAuth token — whichever mechanism delivered the session). AVL defines
+no new dispatch protocol.
 
 For applications that want native MCP integration (Claude Desktop, ChatGPT
-custom GPTs), an optional `lib/avl/mcp-bridge.ts` adapter generates an MCP
-server from the same `agent.ts` manifests. **One source of truth, two
-consumers.**
+custom GPTs), a future MCP bridge adapter (v0.2 roadmap) will generate an
+MCP tool server from the same `agent.ts` manifests. **One source of truth,
+two consumers.** MCP is the hands; AVL is the eyes.
 
 ---
 
@@ -476,8 +580,12 @@ See §3.1.
 7. **Write actions.** Do POST actions echo back an updated AVL document, or
    return a separate result envelope?
 8. **Personalization vs. canonicalization.** A page rendered for two
-   different users produces two different AVL documents. Does this break
-   shared caching, and is that OK?
+   different users produces two different AVL documents. Recommended
+   approach: use `Vary: Authorization` (or a session-hash header) so
+   HTTP caches key on identity. Conservative `@meta.ttl` keeps stale
+   windows short. Public/anonymous routes (no session) can use shared
+   caches freely. ETags per (route + user) enable conditional requests
+   for frequently polled routes.
 
 ---
 
@@ -485,11 +593,11 @@ See §3.1.
 
 | Version | Scope |
 |---|---|
-| v0.1 (this pilot) | Format spec, runtime, 2 demo routes, dev-mode discovery |
-| v0.2 | MCP bridge adapter, conformance test suite, build-time route discovery |
-| v0.3 | Streaming state, delta requests, diff format |
-| v0.4 | Production caching, distributed rate limits, signed AVL docs |
-| v1.0 | RFC + reference implementations for SvelteKit, Remix, Rails |
+| v0.1 (current) | npm package (`@frontier-infra/avl`), Next.js adapter (`@frontier-infra/avl/next`), format spec, example app |
+| v0.2 | **MCP bridge adapter** — derive MCP tools from the same `agent.ts` manifests. Highest-leverage next step: apps get "eyes" (AVL) and "hands" (MCP) from one source of truth. Also: conformance test suite, build-time route discovery. |
+| v0.3 | Streaming state (SSE for long-running computations), delta requests (`?since=`), diff format |
+| v0.4 | Production caching (`Vary` + ETag), distributed rate limits, signed AVL docs |
+| v1.0 | RFC + reference implementations for SvelteKit, Remix, Nuxt, Rails |
 
 ---
 

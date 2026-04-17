@@ -17,11 +17,10 @@ session:
   bearer_prefix: Bearer
   scope: per-user
 
-# Routes (pattern, method, public-or-auth)
+# Routes (pattern, method)
 routes:
   - GET /dashboard.agent
   - GET /journey/{id}.agent
 
 # Spec
-spec: /specs/avl-agent-view-layer.md
-contact: agent-views@argentos.ai
+spec: https://github.com/frontier-infra/avl

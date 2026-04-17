@@ -4,6 +4,10 @@ out/
 build/
 dist/
 
+# example app
+examples/*/node_modules/
+examples/*/.next/
+
 # env
 .env
 .env.local
