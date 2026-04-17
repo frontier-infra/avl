@@ -25,18 +25,9 @@ curl -s -H "Accept: text/agent-view" https://ainode.dev/
 curl -s https://ainode.dev/agent.txt
 ```
 
-Add the AVL badge to your site to signal agent-readiness:
-
-```html
-<a href="/.agent">
-  <img
-    src="https://raw.githubusercontent.com/frontier-infra/avl/main/assets/avl-badge.svg"
-    alt="AVL agent-ready — This site ships native Agent View Layer documents at /.agent URLs."
-  />
-</a>
-```
-
 ![AVL agent-ready](assets/avl-badge.svg)
+
+See [Signaling Agent-Readiness](#signaling-agent-readiness) below for how to add the badge to your site with structured metadata.
 
 ---
 
@@ -321,6 +312,78 @@ routes:
   - GET /dashboard.agent
   - GET /journey/{id}.agent
 ```
+
+---
+
+## Signaling Agent-Readiness
+
+AVL has three discovery layers (URL suffix, content negotiation, `agent.txt`). But there's a fourth — the HTML itself. When your site already knows it's agent-ready, it should ship that knowledge in the markup, not leave it implicit.
+
+### The Badge Pattern
+
+A badge serves three audiences from one HTML element:
+
+| Audience | What they get |
+|---|---|
+| **Humans** | A visual indicator that the site is agent-ready |
+| **AI crawlers** | Structured metadata in `alt` and `title` attributes |
+| **Programmatic scrapers** | `data-*` attributes for machine-readable discovery |
+
+### Basic Badge
+
+```html
+<a href="/.agent">
+  <img
+    src="https://raw.githubusercontent.com/frontier-infra/avl/main/assets/avl-badge.svg"
+    alt="AVL agent-ready — This site ships native Agent View Layer documents at /.agent URLs."
+    title="AVL (Agent View Layer) — Producer-side rendering for AI agents"
+  />
+</a>
+```
+
+### Full Semantic Badge (recommended)
+
+Pack the `alt` text with structured discovery metadata. AI crawlers that parse alt text get everything they need without hitting another endpoint:
+
+```html
+<div
+  role="group"
+  aria-label="Platform capabilities"
+  data-agent-discovery="true"
+  data-avl-endpoint="/.agent"
+  data-avl-manifest="/agent.txt"
+  data-avl-package="@frontier-infra/avl"
+>
+  <a
+    href="/.agent"
+    title="AVL (Agent View Layer) — This site serves parallel structured views
+           for AI agents at /.agent URLs. Same session, zero scraping."
+  >
+    <img
+      src="https://raw.githubusercontent.com/frontier-infra/avl/main/assets/avl-badge.svg"
+      alt="AVL agent-ready — This site ships native Agent View Layer documents
+           at /.agent URLs. Structured @intent, @state, @actions, and @context
+           for AI agents. Discovery: /agent.txt | npm: @frontier-infra/avl |
+           Spec: https://github.com/frontier-infra/avl"
+    />
+    <span title="This site exposes structured agent views at *.agent URLs">
+      agent-ready
+    </span>
+  </a>
+</div>
+```
+
+### Why This Matters
+
+The AVL philosophy is: **the site already knows what it means — ship that knowledge.** This applies at every layer:
+
+- **Pages** know their intent, state, and actions → ship them via `.agent` views
+- **The site** knows its routes and auth model → ship them via `agent.txt`
+- **The HTML** knows it's agent-ready → ship that via badges with structured alt text
+
+A decorative badge that says "agent-ready" is a missed opportunity. The same badge with structured `alt`, `title`, and `data-*` attributes becomes a discovery mechanism. An AI crawler parsing the DOM finds the AVL endpoints without making a single extra request.
+
+This is how [AINode.dev](https://ainode.dev) uses badges — each one carries the full tech stack metadata (AVL endpoints, cluster specs, inference engine, model support) in alt text that agents can parse directly.
 
 ---
 
