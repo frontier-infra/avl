@@ -8,6 +8,9 @@ dist/
 examples/*/node_modules/
 examples/*/.next/
 
+# ops (internal)
+ops/
+
 # env
 .env
 .env.local
