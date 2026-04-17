@@ -1,5 +1,24 @@
 # AVL — Agent View Layer
 
+[![npm version](https://img.shields.io/npm/v/@frontier-infra/avl?style=flat-square&color=0e7c2e)](https://www.npmjs.com/package/@frontier-infra/avl)
+[![npm downloads](https://img.shields.io/npm/dm/@frontier-infra/avl?style=flat-square&color=333)](https://www.npmjs.com/package/@frontier-infra/avl)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@frontier-infra/avl?style=flat-square&color=333&label=size)](https://bundlephobia.com/package/@frontier-infra/avl)
+[![license](https://img.shields.io/npm/l/@frontier-infra/avl?style=flat-square&color=0e7c2e)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square)](package.json)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![ESM](https://img.shields.io/badge/ESM-supported-blue?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+[![CJS](https://img.shields.io/badge/CJS-supported-blue?style=flat-square)](https://nodejs.org/api/modules.html)
+
+[![AVL agent-ready](assets/avl-badge.svg)](https://ainode.dev/.agent)
+[![first adopter](https://img.shields.io/badge/first%20adopter-AINode.dev-76b900?style=flat-square)](https://ainode.dev/.agent)
+[![spec](https://img.shields.io/badge/spec-text%2Fagent--view%3B%20v1-333?style=flat-square)](specs/avl-agent-view-layer.md)
+[![format](https://img.shields.io/badge/format-TOON-purple?style=flat-square)](specs/avl-agent-view-layer.md#34-toon-encoding-for-state)
+[![conformance](https://img.shields.io/badge/conformance-L0--L3-0e7c2e?style=flat-square)](specs/avl-agent-view-layer.md#8-conformance-levels)
+[![MCP](https://img.shields.io/badge/MCP-complementary-blue?style=flat-square)](specs/avl-thesis.md)
+[![auth](https://img.shields.io/badge/auth-delegate%20not%20principal-orange?style=flat-square)](specs/avl-auth-thesis.md)
+
 > A producer-side rendering layer for AI agents.
 > 
 > Like i18n, but the target locale is "agent."
