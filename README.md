@@ -6,6 +6,38 @@
 
 **The page already knows what it means. We just don't ship that knowledge.**
 
+**Same session, different render. Zero new auth surface. Token-efficient by design.**
+
+---
+
+## Live in Production
+
+[**AINode.dev**](https://ainode.dev) is the first production site shipping AVL. Try it right now:
+
+```bash
+# Agent view — structured product spec, features, hardware, actions
+curl -s https://ainode.dev/.agent
+
+# Content negotiation
+curl -s -H "Accept: text/agent-view" https://ainode.dev/
+
+# Discovery manifest
+curl -s https://ainode.dev/agent.txt
+```
+
+Add the AVL badge to your site to signal agent-readiness:
+
+```html
+<a href="/.agent">
+  <img
+    src="https://raw.githubusercontent.com/frontier-infra/avl/main/assets/avl-badge.svg"
+    alt="AVL agent-ready — This site ships native Agent View Layer documents at /.agent URLs."
+  />
+</a>
+```
+
+![AVL agent-ready](assets/avl-badge.svg)
+
 ---
 
 ## The Problem
