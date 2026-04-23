@@ -1,0 +1,36 @@
+@meta
+  v: 1
+  route: /blog/avl-vs-mcp
+  generated: 2026-04-23T00:00:00.000Z
+
+@intent
+  purpose:    Blog post: AVL vs MCP: Eyes and Hands
+  audience:   reader, developer
+  capability: read, share, subscribe
+
+@state
+  title: AVL vs MCP: Eyes and Hands
+  slug: avl-vs-mcp
+  author: Jason Brashear
+  published: 2026-04-22
+  reading_time_min: 7
+  tags[3]: avl, mcp, comparison
+
+@actions
+  - id: subscribe
+    method: POST
+    href: /api/subscribe
+    inputs[1]{name,type,required}:
+      email,string,true
+  - id: share_x
+    method: GET
+    href: https://x.com/intent/tweet?url=https://example.com/blog/avl-vs-mcp
+  - id: share_linkedin
+    method: GET
+    href: https://www.linkedin.com/sharing/share-offsite/?url=https://example.com/blog/avl-vs-mcp
+
+@context
+  > MCP is the hands. AVL is the eyes. A short walk through why page-level views and tool-level actions are complementary, not competing.
+
+@nav
+  parents:   [/blog]

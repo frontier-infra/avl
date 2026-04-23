@@ -1,0 +1,32 @@
+@meta
+  v: 1
+  route: /blog
+  generated: 2026-04-23T00:00:00.000Z
+
+@intent
+  purpose:    Blog index — latest posts from the AVL team
+  audience:   reader, developer
+  capability: browse, subscribe
+
+@state
+  total_posts: 2
+  posts[2]{slug,title,author,published,reading_time_min,tags}:
+    hello-avl,"Hello, AVL",Jason Brashear,2026-04-20,4,"avl,announcement,agents"
+    avl-vs-mcp,AVL vs MCP: Eyes and Hands,Jason Brashear,2026-04-22,7,"avl,mcp,comparison"
+
+@actions
+  - id: subscribe
+    method: POST
+    href: /api/subscribe
+    inputs[1]{name,type,required}:
+      email,string,true
+  - id: rss
+    method: GET
+    href: /feed.xml
+
+@context
+  > 2 published posts. Most recent: "AVL vs MCP: Eyes and Hands".
+
+@nav
+  parents:   [/]
+  drilldown: /blog/{slug}
