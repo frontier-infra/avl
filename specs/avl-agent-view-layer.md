@@ -59,13 +59,19 @@ AVL's wedge:
 
 1. **Producer-side, not scraper-side.** The application controls the
    rendering. No DOM-to-meaning inference required.
-2. **Page-level, not site-level.** Every route ships its own AVL document.
+2. **Page-level, not site-level.** Every route ships its own AVL document —
+   whether the page is a static marketing page, a blog post, a product
+   detail, or an authenticated dashboard.
 3. **Intent-rich.** Every document declares purpose, audience, capability.
    Agents decide if a page is relevant in 4 lines.
 4. **Action-affordant.** Every document enumerates what's actionable from
-   *this page*, scoped to the current user's permissions.
-5. **Authenticated by reuse.** AVL piggybacks on the host application's
-   existing session model. No new bearer-token API key dance.
+   *this page*. For authenticated routes, filtered per role. For static
+   routes, every listed affordance (tel:, mailto:, external URLs, POST
+   endpoints) is available to any visitor.
+5. **Authenticated by reuse *when applicable*.** For authenticated pages,
+   AVL piggybacks on the host application's existing session model — no
+   new bearer-token API key dance. For public/static pages, `@meta.auth`
+   is omitted and the document reflects no identity context.
 
 ---
 
@@ -412,6 +418,45 @@ calls `resolveSession`, renders the view, and serializes the response.
 Production implementations may prefer build-time route discovery over
 manual registry.
 
+### 6.1 Static (Build-Time) Authoring
+
+For pages whose content is known at build time — marketing pages, blog
+posts, documentation, static product catalogs — use `defineStaticAgentView`
+and the `generateStaticAgentViews` generator instead. No request context,
+no `resolveSession`, no RBAC filtering; `@meta.auth` is omitted.
+
+```ts
+import {
+  defineStaticAgentView,
+  generateStaticAgentViews,
+} from "@frontier-infra/avl";
+
+const aboutPage = defineStaticAgentView({
+  intent: {
+    purpose: "Company about page",
+    audience: ["visitor"],
+    capability: ["learn", "contact"],
+  },
+  state: { founded: 1998, city: "Austin, TX" },
+  actions: [
+    { id: "email_contact", method: "GET", href: "mailto:hello@example.com" },
+  ],
+});
+
+// In your build script:
+await generateStaticAgentViews({
+  outDir: "dist",
+  pages: [{ url: "/about-us", view: aboutPage }],
+});
+```
+
+The generator emits one `.agent` file per page into `outDir`, using the
+default URL → path mapping (`/about-us` → `about-us.agent`). Per-page
+`outputPath` and global `resolveOutputPath` options are available for
+static-site generators that prefer a different file layout.
+
+See §11.1 for a complete rendered static example.
+
 ---
 
 ## 7. Action Semantics
@@ -496,11 +541,93 @@ If either fails, the AVL view is leaking.
 
 ## 11. Examples
 
-### 11.1 Dashboard (List)
+### 11.1 Static Marketing Page (Service Area)
+
+A static, build-time-rendered page for a local service business. No session,
+no RBAC — `@meta.auth` is omitted. Actions include non-HTTP schemes
+(`tel:`, `mailto:`) and external URLs.
+
+```
+@meta
+  v: 1
+  route: /services/austin
+  generated: 2026-04-20T09:00:00Z
+  ttl: 1d
+
+@intent
+  purpose:    Plumbing services in Austin, TX
+  audience:   homeowner, property-manager
+  capability: call, book, quote
+
+@state
+  city: "Austin, TX"
+  services[3]: leak repair, water heater install, drain cleaning
+  service_area[3]: 78701, 78704, 78745
+  hours: 24/7 emergency
+  starting_price_usd: 89
+
+@actions
+  - id: call_dispatch
+    method: GET
+    href: tel:+15125550123
+  - id: request_quote
+    method: GET
+    href: mailto:quotes@example.com
+  - id: directions
+    method: GET
+    href: https://maps.google.com/?q=...
+
+@context
+  > Licensed master plumbers serving greater Austin since 1998.
+  > 24/7 emergency dispatch. Starting from $89.
+
+@nav
+  self:    /services/austin.agent
+  parents: [/services]
+  peers:   [/services/round-rock, /services/pflugerville]
+```
+
+Authoring (see §6 for the authenticated equivalent):
+
+```ts
+import {
+  defineStaticAgentView,
+  generateStaticAgentViews,
+} from "@frontier-infra/avl";
+
+const austin = defineStaticAgentView({
+  intent: {
+    purpose: "Plumbing services in Austin, TX",
+    audience: ["homeowner", "property-manager"],
+    capability: ["call", "book", "quote"],
+  },
+  state: {
+    city: "Austin, TX",
+    services: ["leak repair", "water heater install", "drain cleaning"],
+    service_area: ["78701", "78704", "78745"],
+    hours: "24/7 emergency",
+    starting_price_usd: 89,
+  },
+  actions: [
+    { id: "call_dispatch", method: "GET", href: "tel:+15125550123" },
+    { id: "request_quote", method: "GET", href: "mailto:quotes@example.com" },
+    { id: "directions",    method: "GET", href: "https://maps.google.com/?q=..." },
+  ],
+  context: "Licensed master plumbers serving greater Austin since 1998.",
+  meta: { ttl: "1d" },
+});
+
+await generateStaticAgentViews({
+  outDir: "dist",
+  pages: [{ url: "/services/austin", view: austin }],
+});
+```
+
+### 11.2 Dashboard (Authenticated List)
 
 See §3.1.
 
-### 11.2 Detail Page
+### 11.3 Detail Page
 
 ```
 @meta
@@ -550,7 +677,7 @@ See §3.1.
   peers:   [/journey/J-102, /journey/J-103]
 ```
 
-### 11.3 Empty / 404
+### 11.4 Empty / 404
 
 ```
 @meta

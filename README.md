@@ -8,8 +8,8 @@
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square)](package.json)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![ESM](https://img.shields.io/badge/ESM-supported-blue?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
-[![CJS](https://img.shields.io/badge/CJS-supported-blue?style=flat-square)](https://nodejs.org/api/modules.html)
+[![ESM](https://img.shields.io/badge/ESM-supported?style=flat-square&color=blue)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+[![CJS](https://img.shields.io/badge/CJS-supported?style=flat-square&color=blue)](https://nodejs.org/api/modules.html)
 
 [![AVL agent-ready](assets/avl-badge.svg)](https://ainode.dev/.agent)
 [![first adopter](https://img.shields.io/badge/first%20adopter-AINode.dev-76b900?style=flat-square)](https://ainode.dev/.agent)
@@ -19,13 +19,13 @@
 [![MCP](https://img.shields.io/badge/MCP-complementary-blue?style=flat-square)](specs/avl-thesis.md)
 [![auth](https://img.shields.io/badge/auth-delegate%20not%20principal-orange?style=flat-square)](specs/avl-auth-thesis.md)
 
-> A producer-side rendering layer for AI agents.
-> 
+> **Every page your app serves to humans gets a parallel agent view.**
+>
 > Like i18n, but the target locale is "agent."
 
-**The page already knows what it means. We just don't ship that knowledge.**
+**Marketing page, blog post, product detail, authenticated dashboard.** Any page that means something to a human means something to an agent. AVL ships that meaning directly — so agents don't have to reverse-engineer it from pixels.
 
-**Same session, different render. Zero new auth surface. Token-efficient by design.**
+**Same data, different render. Token-efficient by design. Works for static sites, content sites, and authenticated apps.**
 
 ---
 
@@ -50,28 +50,146 @@ See [Signaling Agent-Readiness](#signaling-agent-readiness) below for how to add
 
 ---
 
+## AVL Works for Every Page Type
+
+Before going deep, here's the shape of AVL across four common page types. Each example is the `agent.ts` that sits next to its `page.tsx` (or, for static sites, that feeds a build-time generator). See [`examples/`](examples/) for runnable versions of each.
+
+### 1. Marketing / service-area page (static)
+
+```ts
+// examples/marketing-site/pages/austin.agent.ts
+import { defineStaticAgentView } from "@frontier-infra/avl";
+
+export default defineStaticAgentView({
+  intent: {
+    purpose: "Plumbing services in Austin, TX",
+    audience: ["homeowner", "property-manager"],
+    capability: ["call", "book", "quote"],
+  },
+  state: {
+    city: "Austin, TX",
+    services: ["leak repair", "water heater install", "drain cleaning"],
+    service_area: ["78701", "78704", "78745"],
+    hours: "24/7 emergency",
+    starting_price_usd: 89,
+  },
+  actions: [
+    { id: "call_dispatch", method: "GET", href: "tel:+15125550123" },
+    { id: "request_quote", method: "GET", href: "mailto:quotes@example.com" },
+    { id: "directions",    method: "GET", href: "https://maps.google.com/?q=..." },
+  ],
+});
+```
+
+### 2. Blog post (static)
+
+```ts
+// examples/blog/posts/hello-world.agent.ts
+import { defineStaticAgentView } from "@frontier-infra/avl";
+
+export default defineStaticAgentView({
+  intent: {
+    purpose: "Blog post: Hello, AVL",
+    audience: ["reader", "developer"],
+    capability: ["read", "share", "subscribe"],
+  },
+  state: {
+    title: "Hello, AVL",
+    author: "Jason Brashear",
+    published: "2026-04-20",
+    reading_time_min: 4,
+    tags: ["avl", "agents", "announcement"],
+  },
+  actions: [
+    { id: "subscribe", method: "POST", href: "/api/subscribe" },
+    { id: "share",     method: "GET",  href: "https://twitter.com/intent/tweet?..." },
+  ],
+});
+```
+
+### 3. Product page (static or dynamic)
+
+```ts
+// examples/product-page/products/stainless-kettle.agent.ts
+import { defineStaticAgentView } from "@frontier-infra/avl";
+
+export default defineStaticAgentView({
+  intent: {
+    purpose: "Product detail — stainless steel electric kettle",
+    audience: ["shopper"],
+    capability: ["buy", "save", "share"],
+  },
+  state: {
+    sku: "KTL-17-SS",
+    name: "1.7L Electric Kettle — Stainless",
+    price_usd: 49.0,
+    variants: ["brushed", "polished"],
+    inventory_count: 132,
+    rating: 4.6,
+  },
+  actions: [
+    { id: "add_to_cart",    method: "POST", href: "/api/cart/add" },
+    { id: "save_for_later", method: "POST", href: "/api/wishlist/add" },
+  ],
+});
+```
+
+### 4. Authenticated dashboard (dynamic)
+
+```ts
+// app/dashboard/agent.ts
+import { defineAgentView } from "@frontier-infra/avl";
+
+export default defineAgentView({
+  intent: {
+    purpose: "Project dashboard for active accounts",
+    audience: ["admin", "member"],
+    capability: ["review", "manage", "export"],
+  },
+  state: async ({ user }) => ({
+    projects: await getProjects({ userId: user.id }),
+  }),
+  actions: ({ user }) => [
+    { id: "view_project", method: "GET", href: "/project/{id}.agent" },
+    user.role === "admin"
+      ? { id: "advance_stage", method: "POST", href: "/api/project/{id}/advance" }
+      : null,
+  ],
+});
+```
+
+**Same six sections in every case.** Static or dynamic, public or authenticated — the shape of an agent view never changes. What changes is whether the content is known at build time or resolved per-request against a session.
+
+---
+
 ## The Problem
 
 Web applications are built for humans with eyeballs and mice. When an AI agent arrives, it reverse-engineers pixels: scraping HTML, parsing the DOM, inferring intent from button colors, reconstructing what the server already knew.
 
 **This is backwards.**
 
-The server holds:
-- The authenticated user and their permissions
-- The structured data for this page
-- The business logic that decides what matters
-- The actions the user can take
+The page already holds:
+- The **structured data** it's rendering (post bodies, product specs, service lists, user's projects)
+- The **reason the page exists** (sell a product, explain a service, triage cases)
+- The **things a visitor can do from here** (call, buy, subscribe, advance)
+- The **identity context**, when applicable (the authenticated user and their permissions)
 
 Then it throws all of it away to render HTML. When an agent arrives, it spends tokens and inference cycles recovering an approximation of what was just discarded.
 
-**AVL fills this gap.** For every page your application serves to humans, it serves a parallel agent-native view at the same URL with an `.agent` suffix.
+**AVL fills this gap.** For every page your application serves to humans — static marketing page, blog post, docs page, product detail, authenticated app view — it serves a parallel agent-native view at the same URL with an `.agent` suffix.
 
 ```
-/dashboard       → human view (HTML)
-/dashboard.agent → agent view (text/agent-view; version=1)
+/about-us          → human view (HTML)
+/about-us.agent    → agent view (text/agent-view; version=1)
+
+/blog/hello-world        → human view
+/blog/hello-world.agent  → agent view
+
+/dashboard         → human view
+/dashboard.agent   → agent view
 ```
 
-The agent view is not a summary of the HTML. It's a **parallel rendering of the same server-side data**, optimized for a consumer that reads tokens instead of pixels.
+The agent view is not a summary of the HTML. It's a **parallel rendering of the same server-side (or build-time) data**, optimized for a consumer that reads tokens instead of pixels.
 
 ---
 
@@ -79,11 +197,11 @@ The agent view is not a summary of the HTML. It's a **parallel rendering of the 
 
 Three things are true right now:
 
-1. **AI agents are crossing from "read the web" to "use the web."** Every major lab has shipped agent capabilities. Agents are logging in, navigating, clicking buttons, and submitting forms. The demand is here.
+1. **AI agents are crossing from "read the web" to "use the web."** Every major lab has shipped agent capabilities. Agents are logging in, navigating, clicking buttons, submitting forms. The demand is here.
 
 2. **Browser-use and computer-use agents are hitting their ceiling.** They're expensive, fragile, and break on redesigns. The industry is investing enormous resources in making agents better at reverse-engineering pixels. This is a local maximum, not a solution.
 
-3. **Server-side rendering is mainstream.** Next.js, Remix, SvelteKit, Nuxt. The data is already on the server, already structured, already authenticated — right before it gets turned into pixels. The incremental cost of adding a second rendering target is low.
+3. **Server-side rendering — and static site generation — are mainstream.** Next.js, Remix, SvelteKit, Nuxt, Astro, 11ty, Hugo. The data is already structured, already on the server (or on disk), already in the author's hands — right before it gets turned into pixels. The incremental cost of adding a second rendering target is low.
 
 AVL doesn't require a new web. It requires the web that already exists to ship one more rendering target for a consumer that's already at the door.
 
@@ -91,47 +209,204 @@ AVL doesn't require a new web. It requires the web that already exists to ship o
 
 ## How AVL Differs from the Alternatives
 
-| System | Granularity | Intent | Actions | Auth-scoped | Producer |
-|---|---|---|---|---|---|
-| Scraping (Firecrawl, Jina) | Page | No | No | No | No |
-| `llms.txt` | Site | Light | No | No | Yes |
-| OpenAPI / GraphQL | API | No | Yes | Sometimes | Yes |
-| Schema.org | DOM | SEO | No | No | Yes |
-| ARIA | Element | A11y | Partial | No | Yes |
-| MCP | Tool | Yes | Yes | Yes | Yes |
-| **AVL** | **Page** | **Yes** | **Yes** | **Yes** | **Yes** |
+| System | Granularity | Intent | Actions | Auth-scoped | Producer | Static-friendly |
+|---|---|---|---|---|---|---|
+| Scraping (Firecrawl, Jina) | Page | No | No | No | No | n/a |
+| `llms.txt` | Site | Light | No | No | Yes | Yes |
+| OpenAPI / GraphQL | API | No | Yes | Sometimes | Yes | No |
+| Schema.org | DOM | SEO | No | No | Yes | Yes |
+| ARIA | Element | A11y | Partial | No | Yes | Yes |
+| MCP | Tool | Yes | Yes | Yes | Yes | No |
+| **AVL** | **Page** | **Yes** | **Yes** | **When applicable** | **Yes** | **Yes** |
 
-AVL's wedge: page-level, intent-rich, action-affordant, authenticated, and producer-owned.
+AVL's wedge: page-level, intent-rich, action-affordant, producer-owned — and equally at home on a static marketing site and an authenticated SaaS dashboard.
 
 **MCP is the hands. AVL is the eyes.**
 
 ---
 
-## The Architecture
+## The Six Sections
 
-An AVL document at `/dashboard.agent` contains six sections:
+An AVL document at any `.agent` URL contains six sections. Every section is optional except `@meta` and `@intent`.
 
 ### `@meta`
-Version, route, generation timestamp, TTL, auth identity. Housekeeping.
+Version, route, generation timestamp, TTL, and — if the page is authenticated — the identity the document was rendered for. Housekeeping.
 
 ### `@intent`
-Why this page exists. Three fields: purpose, audience, capability. An agent reads this first and decides in 4 lines whether this page is relevant to its task.
+Why this page exists. Three fields: purpose, audience, capability. An agent reads this first and decides in four lines whether this page is relevant to its task. *This is the section scrapers can never recover* — DOM structure tells you what a page contains, not why it exists or who it's for.
 
 ### `@state`
-The data on this page, encoded in TOON (Token-Oriented Object Notation). Same data the human view renders, in a token-efficient structured format. RBAC-filtered: the agent only sees fields the user can see.
+**The structured data backing this page.** Encoded in TOON (Token-Oriented Object Notation) for 50–70% token savings over JSON. The shape of `@state` varies by page type:
+
+| Page type | `@state` holds |
+|---|---|
+| Marketing / service area | Facts — city, services, prices, service area zip codes, hours |
+| Blog post | Title, author, published date, tags, reading time |
+| Docs page | Section, topic, last-updated, prev/next |
+| Product page | SKU, price, variants, inventory count, rating |
+| Authenticated dashboard | The user's projects, alerts, recent activity — RBAC-filtered |
+
+For authenticated routes, `@state` is filtered server-side per role. For static pages, it's just facts — the same facts a human sees on the rendered page.
 
 ### `@actions`
-What the user can do from here. Each action has an ID, an HTTP method, a URL, and optional input schema. Server-rendered per role — a read-only user sees no POST actions.
+**What the visitor can do from here.** Each action has an ID, an HTTP method, a URL, and an optional input schema. Actions aren't limited to in-app endpoints:
+
+| Scheme | Example use |
+|---|---|
+| `tel:` | Call dispatch from a service-area page |
+| `mailto:` | Request a quote, subscribe to a newsletter |
+| External URL | "Get directions" to Google Maps, share to Twitter |
+| Same-origin POST | Add-to-cart, advance-stage, submit-form |
+| Same-origin GET | Navigate to a detail page's `.agent` view |
+
+For authenticated routes, `@actions` are filtered per role — a read-only user simply doesn't see write-capable entries. The absence of an action *is* the authorization signal.
 
 ### `@context`
-Narrative markdown capturing what an analyst would say about this page. "3 active projects, 1 high-risk, deadline in 6 days."
+Narrative markdown capturing the "so what." What would an analyst, a copywriter, or an editor say about this page in one sentence? "3 active projects, 1 high-risk, deadline in 6 days." "Licensed master plumbers in Austin since 1998." "This post explains how AVL differs from MCP in 250 words."
 
 ### `@nav`
-Where to go next. Self link, parents, peers, drilldown templates.
+Where to go next. Self link, parents, peers, drilldown templates. The agent can walk the site's information architecture without parsing `<a>` tags.
 
 ---
 
-## Example: Project Dashboard
+## AVL for Static Sites
+
+Not every page has an authenticated session behind it. Most pages on the public web — service-area pages, blog posts, doc sites, product catalogs, company pages, support articles — are **static content**. AVL's static support treats these as a first-class case, not an afterthought.
+
+### `defineStaticAgentView`
+
+The static primitive has the same six AVL sections as `defineAgentView` — but no request context, no auth, no RBAC filtering. Each field accepts a plain value or a zero-arg (possibly async) producer, so you can pull from markdown frontmatter, JSON, or an external content API at build time.
+
+```ts
+import { defineStaticAgentView } from "@frontier-infra/avl";
+
+export default defineStaticAgentView({
+  intent: {
+    purpose: "About page for a licensed Austin plumber",
+    audience: ["prospective-customer"],
+    capability: ["call", "quote", "learn"],
+  },
+  state: {
+    founded: 1998,
+    city: "Austin, TX",
+    credentials: ["Master Plumber #M-39214", "TCEQ Licensed"],
+  },
+  actions: [
+    { id: "call_dispatch", method: "GET", href: "tel:+15125550123" },
+    { id: "email_quote",   method: "GET", href: "mailto:quotes@example.com" },
+  ],
+  context: "Family-owned plumbing contractor serving greater Austin since 1998.",
+});
+```
+
+### `generateStaticAgentViews`
+
+A framework-agnostic build-time generator. Pass a list of `{ url, view }` pairs plus an output directory; the generator emits one `.agent` file per page alongside your static HTML:
+
+```ts
+import { generateStaticAgentViews } from "@frontier-infra/avl";
+import home    from "./pages/index.agent";
+import about   from "./pages/about.agent";
+import austin  from "./pages/services/austin.agent";
+
+await generateStaticAgentViews({
+  outDir: "dist",
+  pages: [
+    { url: "/",                  view: home   },
+    { url: "/about-us",          view: about  },
+    { url: "/services/austin",   view: austin },
+  ],
+  // Optional: shared timestamp for reproducible builds
+  generatedAt: process.env.BUILD_TIME ?? new Date().toISOString(),
+});
+```
+
+Default output convention: `/about-us` → `about-us.agent` at the output-dir root (mirrors AVL's URL convention `/about-us` ↔ `/about-us.agent`). Override per-page (`outputPath`) or globally (`resolveOutputPath`) if your SSG prefers a different layout.
+
+Runnable examples:
+
+- [`examples/marketing-site`](examples/marketing-site) — 3-page service business
+- [`examples/blog`](examples/blog) — blog index + articles
+- [`examples/docs-site`](examples/docs-site) — a small docs set
+- [`examples/product-page`](examples/product-page) — e-commerce product detail
+
+---
+
+## Getting Started
+
+### Installation
+
+```bash
+npm install @frontier-infra/avl
+```
+
+### If your page is static
+
+Author a `defineStaticAgentView` config per page (see [AVL for Static Sites](#avl-for-static-sites) above) and call `generateStaticAgentViews` as a final step of your build.
+
+### If your page is authenticated / dynamic
+
+Colocate an `agent.ts` next to your `page.tsx`:
+
+```typescript
+// app/dashboard/agent.ts
+import { defineAgentView } from "@frontier-infra/avl";
+
+export default defineAgentView({
+  intent: {
+    purpose: "Project dashboard for active accounts",
+    audience: ["admin", "member"],
+    capability: ["review", "manage", "export"],
+  },
+  state: async ({ user }) => ({
+    projects: await getProjects({ userId: user.id }),
+  }),
+  actions: ({ user }) => [
+    { id: "view_project", method: "GET", href: "/project/{id}.agent" },
+    user.role === "admin"
+      ? { id: "advance_stage", method: "POST", href: "/api/project/{id}/advance" }
+      : null,
+  ],
+  context: ({ state }) =>
+    `${state.projects.length} active projects.`,
+  nav: {
+    parents: ["/"],
+    drilldown: "/project/{id}",
+  },
+  meta: { ttl: "30s" },
+});
+```
+
+Wire the catch-all handler:
+
+```typescript
+// app/agent/[[...path]]/route.ts
+import { createAgentViewHandler } from "@frontier-infra/avl/next";
+
+export const GET = createAgentViewHandler({
+  resolveSession: async (req) => {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return null;
+    return {
+      id: session.user.id,
+      role: session.user.role,
+      name: session.user.name,
+    };
+  },
+  routes: [
+    { pattern: "/dashboard", view: dashboardAgent },
+    { pattern: "/project/:id", view: projectAgent },
+  ],
+});
+```
+
+That's it. Every page with an `agent.ts` now ships a parallel agent view. The framework handles routing, serialization, and caching.
+
+---
+
+## A Complete Example: Project Dashboard
+
+This is what a fully rendered authenticated AVL document looks like — meta, intent, all six sections.
 
 ```
 @meta
@@ -175,73 +450,7 @@ Where to go next. Self link, parents, peers, drilldown templates.
   drilldown: /journey/{id}
 ```
 
----
-
-## Getting Started
-
-### Installation
-
-```bash
-npm install @frontier-infra/avl
-```
-
-### Authoring an Agent View
-
-Colocate an `agent.ts` next to your `page.tsx`:
-
-```typescript
-// app/dashboard/agent.ts
-import { defineAgentView } from "@frontier-infra/avl";
-
-export default defineAgentView({
-  intent: {
-    purpose: "Project dashboard for active accounts",
-    audience: ["admin", "member"],
-    capability: ["review", "manage", "export"],
-  },
-  state: async ({ user }) => ({
-    projects: await getProjects({ userId: user.id }),
-  }),
-  actions: ({ user }) => [
-    { id: "view_project", method: "GET", href: "/project/{id}.agent" },
-    user.role === "admin"
-      ? { id: "advance_stage", method: "POST", href: "/api/project/{id}/advance" }
-      : null,
-  ],
-  context: ({ state }) =>
-    `${state.projects.length} active projects.`,
-  nav: {
-    parents: ["/"],
-    drilldown: "/project/{id}",
-  },
-  meta: { ttl: "30s" },
-});
-```
-
-### Wiring the Catch-All Handler
-
-```typescript
-// app/agent/[[...path]]/route.ts
-import { createAgentViewHandler } from "@frontier-infra/avl/next";
-
-export const GET = createAgentViewHandler({
-  resolveSession: async (req) => {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return null;
-    return {
-      id: session.user.id,
-      role: session.user.role,
-      name: session.user.name,
-    };
-  },
-  routes: [
-    { pattern: "/dashboard", view: dashboardAgent },
-    { pattern: "/project/:id", view: projectAgent },
-  ],
-});
-```
-
-That's it. Every page with an `agent.ts` now ships a parallel agent view. The framework handles routing, serialization, and caching.
+The static examples in [`examples/`](examples/) ship `.agent` files of the same shape — just with no `auth` line, and `@state` containing facts rather than per-user data.
 
 ---
 
@@ -253,14 +462,18 @@ Start at L0. Ship value at every step.
 |---|---|---|---|
 | **L0** | `@meta`, `@intent` | Hours | Agents can triage routes — "Is this relevant?" |
 | **L1** | L0 + `@state` | Days | Agents can read structured data without DOM parsing |
-| **L2** | L1 + `@actions` | Days | Agents can operate — click buttons, submit forms |
+| **L2** | L1 + `@actions` | Days | Agents can operate — call, buy, submit forms |
 | **L3** | L2 + `@nav`, `@context` | Weeks | Agents can traverse and understand the "so what" |
 
-A team can ship L0 across every route in a single day. Each route gets a 5-line `agent.ts` declaring its intent. No data integration, no action wiring. And already, any AI agent can scan the site and build a map of what every page does and who it's for.
+A static site can hit L3 in an afternoon. A medium-sized app can ship L0 across every route in a single day. No data integration, no action wiring for L0 — just a 5-line `agent.ts` per route declaring intent. Any AI agent can already scan the site and build a map of what every page does and who it's for.
 
 ---
 
-## The Auth Model
+## The Auth Model (When It Applies)
+
+Public pages have no session — their `@meta` has no `auth` field, and their `@state`/`@actions` are whatever the static content dictates. No further discussion needed.
+
+For **authenticated** pages, AVL's position is straightforward:
 
 **The agent is not a new principal. It is a delegate of an existing human session.**
 
@@ -309,13 +522,16 @@ Three mechanisms, in priority order:
 
 ### URL Suffix (Primary)
 ```
+/about-us.agent
+/blog/hello-world.agent
+/product/kettle-17-ss.agent
 /dashboard.agent
 ```
 Cacheable by any HTTP cache, shareable, debuggable in any browser, curl-able without special headers.
 
 ### Content Negotiation (Fallback)
 ```
-GET /dashboard
+GET /about-us
 Accept: text/agent-view
 ```
 
@@ -325,11 +541,10 @@ GET /agent.txt
 
 version: 1
 discovery: [suffix, accept-header]
-session:
-  mechanisms: [cookie, bearer]
 routes:
-  - GET /dashboard.agent
-  - GET /journey/{id}.agent
+  - GET /about-us.agent
+  - GET /blog/{slug}.agent
+  - GET /dashboard.agent          # session required
 ```
 
 ---
@@ -397,7 +612,7 @@ Pack the `alt` text with structured discovery metadata. AI crawlers that parse a
 The AVL philosophy is: **the site already knows what it means — ship that knowledge.** This applies at every layer:
 
 - **Pages** know their intent, state, and actions → ship them via `.agent` views
-- **The site** knows its routes and auth model → ship them via `agent.txt`
+- **The site** knows its routes and discovery model → ship them via `agent.txt`
 - **The HTML** knows it's agent-ready → ship that via badges with structured alt text
 
 A decorative badge that says "agent-ready" is a missed opportunity. The same badge with structured `alt`, `title`, and `data-*` attributes becomes a discovery mechanism. An AI crawler parsing the DOM finds the AVL endpoints without making a single extra request.
@@ -411,11 +626,23 @@ This is how [AINode.dev](https://ainode.dev) uses badges — each one carries th
 - **[Full Specification](specs/avl-agent-view-layer.md)** — Format grammar, conformance levels, security model
 - **[AVL Thesis](specs/avl-thesis.md)** — The problem, the solution, why now
 - **[Auth Thesis](specs/avl-auth-thesis.md)** — Same session, different render. Zero new auth surface.
-- **[Examples](examples/)** — Working Next.js demo app
+- **[Examples](examples/)** — Runnable demos across four page types
 
 ---
 
-## Run the Example App
+## Examples
+
+| Example | What it shows |
+|---|---|
+| [`examples/marketing-site`](examples/marketing-site) | 3-page local-services site. `tel:`, `mailto:`, directions actions. |
+| [`examples/blog`](examples/blog) | Blog index + posts. Subscribe, share actions. |
+| [`examples/docs-site`](examples/docs-site) | A small docs set. Prev/next, edit-on-github. |
+| [`examples/product-page`](examples/product-page) | E-commerce product detail. Add-to-cart, save-for-later. |
+| [`examples/next-app`](examples/next-app) | Authenticated Next.js dashboard + detail views. |
+
+Each static example ships its expected `.agent` output checked in under `samples/` — you can read them without running the build.
+
+### Run the authenticated Next.js example
 
 ```bash
 git clone https://github.com/frontier-infra/avl.git
@@ -444,21 +671,30 @@ curl -s -H "Accept: text/agent-view" http://localhost:3002/dashboard
 curl -s http://localhost:3002/agent.txt
 ```
 
+### Run any of the static examples
+
+```bash
+cd examples/marketing-site    # or blog / docs-site / product-page
+npm install
+npm run build
+ls dist/*.agent
+```
+
 ---
 
 ## The Roadmap
 
-- **v0.1** (current) — npm package, Next.js adapter, format spec, example app
-- **v0.2** — MCP bridge adapter (derive MCP tools from `agent.ts` manifests), conformance test suite
+- **v0.1** (current) — npm package, Next.js adapter, **static site generator**, format spec, example apps across four page types
+- **v0.2** — MCP bridge adapter (derive MCP tools from `agent.ts` manifests), conformance test suite, auto-discovery of `agent.ts` files at build time
 - **v0.3** — Streaming state, delta requests
 - **v0.4** — Production caching, distributed rate limits
-- **v1.0** — RFC + reference implementations for SvelteKit, Remix, Nuxt, Rails
+- **v1.0** — RFC + reference implementations for SvelteKit, Remix, Nuxt, Astro, Rails
 
 ---
 
 ## Contributing
 
-We're looking for early adopters, framework implementations, and real-world feedback. If you're building an agent-driven application, AVL is for you.
+We're looking for early adopters, framework implementations, and real-world feedback. If you're building an agent-driven application — or just a static marketing site that you'd like agents to understand natively — AVL is for you.
 
 - **[Contributing Guide](CONTRIBUTING.md)** — How to get started
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community standards
@@ -475,7 +711,7 @@ We're looking for early adopters, framework implementations, and real-world feed
 
 ## Relationship to Argent OS
 
-AVL is the substrate that Argent OS uses to drive any host application. Where human users navigate via DOM and CSS, Argent OS navigates via AVL routes and action affordances. An app that ships AVL is an app Argent OS can drive without scraping, training, or human translation.
+AVL is the substrate that Argent OS uses to drive any host application. Where human users navigate via DOM and CSS, Argent OS navigates via AVL routes and action affordances. An app — or a static site — that ships AVL is a site Argent OS can drive without scraping, training, or human translation.
 
 ---
 
@@ -485,8 +721,8 @@ AVL mirrors how i18n works:
 
 - **One data pipeline.** A locale parameter selects the rendering target.
 - **Different output format.** Human view renders HTML. Agent view renders structured text.
-- **Colocated authoring.** Developer writes `agent.ts` next to `page.tsx`.
-- **No duplication.** Both views reuse the same data fetchers, auth context, and RBAC rules.
+- **Colocated authoring.** Developer writes `agent.ts` next to `page.tsx` (or next to the markdown file, or in the static-site config).
+- **No duplication.** Both views reuse the same data fetchers or the same source content.
 - **Easy to adopt.** Start with L0 (just intent). Expand incrementally.
 
 The server already does this for every other non-default audience. AVL is just the agent locale.
