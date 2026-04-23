@@ -1,0 +1,17 @@
+{
+  "name": "avl-example-product-page",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AVL example — single e-commerce product detail page. Shows @state as product metadata (SKU, price, variants, inventory) and @actions for add-to-cart, share, save-for-later.",
+  "type": "module",
+  "scripts": {
+    "build": "tsx src/build.ts"
+  },
+  "dependencies": {
+    "@frontier-infra/avl": "file:../../"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

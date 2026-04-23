@@ -1,0 +1,59 @@
+@meta
+  v: 1
+  route: /product/kettle-17-ss
+  generated: 2026-04-23T00:00:00.000Z
+  ttl: 5m
+
+@intent
+  purpose:    Product detail — 1.7L stainless-steel electric kettle
+  audience:   shopper
+  capability: buy, save, share, compare
+
+@state
+  sku: KTL-17-SS
+  name: 1.7L Electric Kettle — Stainless
+  brand: Ironpeak
+  price_usd: 49
+  currency: USD
+  variants[3]{id,label,in_stock}:
+    brushed,Brushed stainless,true
+    polished,Polished stainless,true
+    matte_black,Matte black,false
+  inventory_count: 132
+  rating: 4.6
+  reviews_count: 287
+  features[4]: 1500W rapid boil, auto shut-off, boil-dry protection, removable limescale filter
+  specs{capacity_l,wattage,weight_kg,warranty_years}: 1.7,1500,1.1,3
+  ships_from: "Austin, TX"
+  eligible_for_prime: true
+
+@actions
+  - id: add_to_cart
+    method: POST
+    href: /api/cart/add
+    inputs[3]{name,type,required}:
+      sku,string,true
+      variant,string,true
+      quantity,integer,false
+  - id: save_for_later
+    method: POST
+    href: /api/wishlist/add
+    inputs[1]{name,type,required}:
+      sku,string,true
+  - id: share_x
+    method: GET
+    href: https://x.com/intent/tweet?url=https://example.com/product/kettle-17-ss
+  - id: share_email
+    method: GET
+    href: mailto:?subject=Check+out+this+kettle&body=https://example.com/product/kettle-17-ss
+  - id: compare
+    method: GET
+    href: /category/kettles.agent
+
+@context
+  > Best-selling stainless kettle in the 1.5-2L segment. 4.6★ across 287 reviews; 3-year warranty; ships same-day from Austin, TX.
+
+@nav
+  self:      /product/kettle-17-ss.agent
+  parents:   [/category/kettles, /]
+  peers:     [/product/kettle-12-gooseneck, /product/kettle-electric-glass]
