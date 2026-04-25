@@ -460,12 +460,12 @@ Start at L0. Ship value at every step.
 
 | Level | Sections | Effort | Value |
 |---|---|---|---|
-| **L0** | `@meta`, `@intent` | Hours | Agents can triage routes — "Is this relevant?" |
+| **L0** | `@meta`, `@intent`, page-specific body anchor | Hours | Agents can triage routes — "Is this relevant?" — and fetchers can discover the companion URL |
 | **L1** | L0 + `@state` | Days | Agents can read structured data without DOM parsing |
 | **L2** | L1 + `@actions` | Days | Agents can operate — call, buy, submit forms |
 | **L3** | L2 + `@nav`, `@context` | Weeks | Agents can traverse and understand the "so what" |
 
-A static site can hit L3 in an afternoon. A medium-sized app can ship L0 across every route in a single day. No data integration, no action wiring for L0 — just a 5-line `agent.ts` per route declaring intent. Any AI agent can already scan the site and build a map of what every page does and who it's for.
+A static site can hit L3 in an afternoon. A medium-sized app can ship L0 across every route in a single day. No data integration, no action wiring for L0 — just a minimal `agent.ts` per route declaring intent plus a page-specific body link to the companion view. Any AI agent can already scan the site and build a map of what every page does and who it's for.
 
 ---
 
@@ -558,6 +558,11 @@ routes:
   - GET /about-us.agent
   - GET /blog/{slug}.agent
   - GET /dashboard.agent          # session required
+agent_views:
+  - GET /.agent
+  - GET /about-us.agent
+  - GET /blog/hello-world.agent
+  - GET /dashboard.agent
 ```
 
 ---
@@ -565,6 +570,11 @@ routes:
 ## Signaling Agent-Readiness
 
 AVL has three discovery layers (URL suffix, content negotiation, `agent.txt`). But there's a fourth — the HTML itself. When your site already knows it's agent-ready, it should ship that knowledge in the markup, not leave it implicit.
+
+For API fetchers with URL-provenance gates, a body `<a href>` to the current
+page's companion is the strongest discovery signal. Head links, badges, and
+`data-*` attributes are still useful, but they are not substitutes for a
+navigable per-page anchor.
 
 ### The Badge Pattern
 
@@ -586,6 +596,21 @@ A badge serves three audiences from one HTML element:
   rel="alternate agent-view"
   type="text/agent-view"
   data-avl-companion="page"
+>
+  Agent view of this page
+</a>
+```
+
+If a visible link does not fit the design, keep the anchor crawlable and
+visually hide it:
+
+```html
+<a
+  href="/services/water-heater-installation.agent"
+  rel="alternate agent-view"
+  type="text/agent-view"
+  data-avl-companion="page"
+  style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
 >
   Agent view of this page
 </a>

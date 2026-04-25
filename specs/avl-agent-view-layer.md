@@ -263,7 +263,7 @@ GET /dashboard
 Accept: text/agent-view
 ```
 
-Server-side middleware rewrites internally to the AVL runtime. This is the
+Server-side proxy rewrites internally to the AVL runtime. This is the
 lowest-friction path for agents that can send custom headers: the canonical
 human URL remains the authority, and the agent asks for the agent-native
 representation.
@@ -284,8 +284,13 @@ Properties:
 
 ### 4.3 HTML Discovery
 
-Every human page with an AVL companion SHOULD advertise the companion in its
-HTML:
+Every human page with an AVL companion MUST include a navigable body anchor
+pointing at that page's companion. This is an L0 requirement because API
+fetchers with URL-provenance gates commonly whitelist body `<a href>` targets
+from previously fetched pages.
+
+Every human page with an AVL companion SHOULD also advertise the companion in
+its `<head>`:
 
 ```html
 <link rel="alternate" type="text/agent-view" href="/dashboard.agent">
@@ -305,10 +310,41 @@ The `href` MUST point at the current page's AVL companion. A site-root badge
 such as `/.agent` can advertise site-level support, but it is not a substitute
 for the page-specific companion link.
 
-### 4.4 Site Manifest at `/agent.txt`
+If a visible footer/header link is not acceptable, the anchor MAY be visually
+hidden as long as it remains a real body `<a href>`:
+
+```html
+<a
+  href="/dashboard.agent"
+  rel="alternate agent-view"
+  type="text/agent-view"
+  data-avl-companion="page"
+  style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
+>
+  Agent view of this page
+</a>
+```
+
+### 4.4 Discovery Signals: Provenance vs. Understanding
+
+AVL distinguishes two classes of metadata:
+
+- **URL provenance signals** help an agent HTTP client get permission to
+  request the agent view. These include body `<a href>` links, `<link
+  rel="alternate">`, HTTP `Link:` headers, and same-URL content negotiation.
+- **Content-understanding signals** help a model understand AVL support after
+  it has reached the page. These include badge `alt` text, `title`
+  attributes, `data-*` attributes, and manifest documentation.
+
+Do not rely on content-understanding signals for URL provenance. A badge `alt`
+string that mentions `/agent.txt` or `/services/x.agent` can teach the model
+the convention, but provenance-gated fetchers may still refuse to fetch those
+URLs unless they appeared as navigable links or were user-provided.
+
+### 4.5 Site Manifest at `/agent.txt`
 
 Like `robots.txt` but for agents. Lists the discoverable AVL routes,
-auth model, and supported discovery mechanisms.
+auth model, supported discovery mechanisms, and concrete agent-view URLs.
 
 ```
 version: 1
@@ -321,6 +357,11 @@ session:
 routes:
   - GET /dashboard.agent
   - GET /journey/{id}.agent
+agent_views:
+  - GET /.agent
+  - GET /dashboard.agent
+  - GET /journey/J-101.agent
+  - GET /journey/J-102.agent
 ```
 
 ---
@@ -502,7 +543,7 @@ two consumers.** MCP is the hands; AVL is the eyes.
 
 | Level | Required sections |
 |---|---|
-| L0 | `@meta`, `@intent` |
+| L0 | `@meta`, `@intent`, page-specific body `<a href>` discovery |
 | L1 | L0 + `@state` |
 | L2 | L1 + `@actions` |
 | L3 | L2 + `@nav` + `@context` |

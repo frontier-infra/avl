@@ -438,7 +438,7 @@ AVL defines four conformance levels:
 
 | Level | Sections | Effort | Value |
 |---|---|---|---|
-| **L0** | `@meta` + `@intent` | Hours | Agents can triage every route — "is this page relevant?" — without scraping |
+| **L0** | `@meta` + `@intent` + page-specific body link | Hours | Agents can triage every route and fetchers can discover the companion URL |
 | **L1** | + `@state` | Days | Agents can read structured data without DOM parsing |
 | **L2** | + `@actions` | Days | Agents can operate — click buttons, submit forms, navigate |
 | **L3** | + `@nav` + `@context` | Weeks | Agents can traverse the app and understand the "so what" |
@@ -446,10 +446,10 @@ AVL defines four conformance levels:
 **The key insight:** L0 is trivially cheap and already useful.
 
 A team can ship L0 across every route in a single day. Every page gets
-an `agent.ts` that declares its intent. That's 5 lines per route. No data
-integration, no action wiring, no API changes. And already, any AI agent
-can scan the site and build a map of what every page does, who it's for,
-and what capabilities it offers.
+an `agent.ts` that declares its intent plus a body `<a href>` pointing at
+the page-specific companion view. No data integration, no action wiring,
+no API changes. And already, any AI agent can scan the site and build a
+map of what every page does, who it's for, and what capabilities it offers.
 
 L2 is where the real power unlocks — the agent becomes an operator, not
 just a reader. But the ramp from L0 to L2 is incremental. Start with the

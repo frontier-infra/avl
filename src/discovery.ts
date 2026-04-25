@@ -24,6 +24,11 @@ export type AgentViewBodyLinkOptions = AgentViewPathOptions & {
   className?: string;
   /** Optional id attribute. */
   id?: string;
+  /**
+   * Render as a normal anchor or visually hide it while keeping it crawlable.
+   * Defaults to "visible".
+   */
+  presentation?: "visible" | "visually-hidden";
 };
 
 export type AvlBadgeOptions = AgentViewPathOptions & {
@@ -89,6 +94,11 @@ export function renderAgentViewBodyLink(
   if (options.id) attrs.push(`id="${escapeHtmlAttribute(options.id)}"`);
   if (options.className) {
     attrs.push(`class="${escapeHtmlAttribute(options.className)}"`);
+  }
+  if (options.presentation === "visually-hidden") {
+    attrs.push(
+      `style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"`
+    );
   }
 
   return `<a ${attrs.join(" ")}>${label}</a>`;

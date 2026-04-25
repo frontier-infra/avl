@@ -57,6 +57,17 @@ test("renderAgentViewBodyLink emits a crawlable anchor and escapes content", () 
   );
 });
 
+test("renderAgentViewBodyLink can visually hide the crawlable anchor", () => {
+  const html = renderAgentViewBodyLink({
+    path: "/quote",
+    presentation: "visually-hidden",
+  });
+
+  assert.match(html, /href="\/quote\.agent"/);
+  assert.match(html, /data-avl-companion="page"/);
+  assert.match(html, /style="position:absolute;width:1px;height:1px;/);
+});
+
 test("renderAvlBadge points at the current page companion", () => {
   const html = renderAvlBadge({ path: "/services/water-heater-installation" });
 

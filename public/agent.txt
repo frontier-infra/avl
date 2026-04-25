@@ -23,6 +23,14 @@ routes:
   - GET /dashboard.agent
   - GET /journey/{id}.agent
 
+# Concrete agent-view inventory for provenance-gated fetchers
+agent_views:
+  - GET /.agent
+  - GET /dashboard.agent
+  - GET /journey/J-101.agent
+  - GET /journey/J-102.agent
+  - GET /journey/J-103.agent
+
 # Fetcher hints
 fetcher_hints:
   safe_methods: [GET, HEAD]
