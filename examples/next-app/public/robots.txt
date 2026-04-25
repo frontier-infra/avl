@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# AVL - Agent View Layer
+# Manifest: /agent.txt
+Agent-Manifest: /agent.txt

@@ -334,20 +334,24 @@ values — these are rows and columns, not arbitrary nested trees.
 grammar is simple enough that any LLM can read it without a parser, and
 a formal parser is <100 lines.
 
-### 5.2 `.agent` URL Suffix Over Content Negotiation Alone
+### 5.2 Same-URL Negotiation Plus `.agent` URLs
 
-The primary discovery mechanism is URL suffix: `/dashboard.agent`, not
-`Accept: text/agent-view` on `/dashboard`.
+AVL supports both `Accept: text/agent-view` on `/dashboard` and a
+cacheable `/dashboard.agent` companion.
 
-**The bet:** URLs are the most fundamental addressing unit on the web.
-A `.agent` URL is cacheable by any HTTP cache. Shareable by pasting.
+**The bet:** content negotiation has the lowest discovery cost for agents
+that can send custom headers. The human URL stays the authority, and the
+agent asks for the representation it wants.
+
+The `.agent` URL remains important because URLs are the most fundamental
+addressing unit on the web. A `.agent` URL is cacheable by any HTTP cache.
+Shareable by pasting.
 Debuggable in any browser. Curl-able without headers. Every piece of
 infrastructure that understands URLs — CDNs, load balancers, caches, log
 aggregators — works with `.agent` out of the box.
 
-Content negotiation is supported as a fallback (agents that prefer single-
-URL semantics can use it). But the URL suffix is the primary mechanism
-because it composes with existing infrastructure without configuration.
+The two forms MUST resolve to the same AVL document. HTML discovery links
+connect them from the human page.
 
 ### 5.3 `@intent` Exists
 

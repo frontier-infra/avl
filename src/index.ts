@@ -5,6 +5,21 @@ export { encodeNamed, scalar } from "./toon";
 export { resolveAgentView, listRoutes } from "./registry";
 export type { RegistryEntry, ResolvedAgentView } from "./registry";
 export {
+  normalizeHumanPath,
+  renderAgentViewBodyLink,
+  renderAgentViewHeadLinks,
+  renderAgentViewLinkHeader,
+  renderAvlBadge,
+  resolveAgentViewPath,
+} from "./discovery";
+export type {
+  AgentViewBodyLinkOptions,
+  AgentViewHeadLinkOptions,
+  AgentViewLinkHeaderOptions,
+  AgentViewPathOptions,
+  AvlBadgeOptions,
+} from "./discovery";
+export {
   defineStaticAgentView,
   generateStaticAgentViews,
   defaultResolveOutputPath,

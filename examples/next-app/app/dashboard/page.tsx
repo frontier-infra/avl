@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { getAlerts, getJourneys } from "@/data/mock";
 
+export const metadata = {
+  alternates: {
+    types: {
+      "text/agent-view": "/dashboard.agent",
+    },
+  },
+};
+
 export default function DashboardPage() {
   const journeys = getJourneys({ userId: "u-42" });
   const alerts = getAlerts({ userId: "u-42" });
@@ -9,7 +17,15 @@ export default function DashboardPage() {
     <>
       <h1>
         Dashboard
-        <Link className="agent-link" href="/dashboard.agent">.agent</Link>
+        <Link
+          className="agent-link"
+          href="/dashboard.agent"
+          rel="alternate agent-view"
+          type="text/agent-view"
+          data-avl-companion="page"
+        >
+          .agent
+        </Link>
       </h1>
       <p className="muted">Active matters for Sarah Kim, Smith Law.</p>
 

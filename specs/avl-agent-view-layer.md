@@ -252,9 +252,23 @@ Each action declares a callable affordance:
 
 ## 4. Discovery
 
-Three layers, in priority order.
+Four layers, in priority order.
 
-### 4.1 URL Suffix (preferred)
+### 4.1 Content Negotiation
+
+Same URL, with the `Accept` header:
+
+```
+GET /dashboard
+Accept: text/agent-view
+```
+
+Server-side middleware rewrites internally to the AVL runtime. This is the
+lowest-friction path for agents that can send custom headers: the canonical
+human URL remains the authority, and the agent asks for the agent-native
+representation.
+
+### 4.2 URL Suffix
 
 Append `.agent` to any path:
 
@@ -268,19 +282,30 @@ Properties:
 - Debuggable in any browser
 - No client capability negotiation needed
 
-### 4.2 Content Negotiation
+### 4.3 HTML Discovery
 
-Same URL, with the `Accept` header:
+Every human page with an AVL companion SHOULD advertise the companion in its
+HTML:
 
+```html
+<link rel="alternate" type="text/agent-view" href="/dashboard.agent">
+<link rel="agent-view" type="text/agent-view" href="/dashboard.agent">
+
+<a
+  href="/dashboard.agent"
+  rel="alternate agent-view"
+  type="text/agent-view"
+  data-avl-companion="page"
+>
+  Agent view of this page
+</a>
 ```
-GET /dashboard
-Accept: text/agent-view
-```
 
-Server-side middleware rewrites internally to the AVL runtime. Useful for
-agent clients that prefer single-URL semantics.
+The `href` MUST point at the current page's AVL companion. A site-root badge
+such as `/.agent` can advertise site-level support, but it is not a substitute
+for the page-specific companion link.
 
-### 4.3 Site Manifest at `/agent.txt`
+### 4.4 Site Manifest at `/agent.txt`
 
 Like `robots.txt` but for agents. Lists the discoverable AVL routes,
 auth model, and supported discovery mechanisms.
@@ -288,7 +313,7 @@ auth model, and supported discovery mechanisms.
 ```
 version: 1
 content-type: text/agent-view; version=1
-discovery: [suffix, accept-header]
+discovery: [accept-header, suffix]
 session:
   mechanisms: [cookie, bearer]
   cookie: session_token

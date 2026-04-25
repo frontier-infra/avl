@@ -518,9 +518,20 @@ TOON is simple enough for any LLM to parse natively. The grammar is intentionall
 
 ## Discovery
 
-Three mechanisms, in priority order:
+Three mechanisms, plus HTML signals that make the agent view discoverable
+from the human page itself:
 
-### URL Suffix (Primary)
+### Content Negotiation (same URL)
+```
+GET /about-us
+Accept: text/agent-view
+```
+
+This has the lowest discovery cost for agents that can send custom headers:
+the user-provided URL stays the URL, and the agent asks for the agent-native
+representation.
+
+### URL Suffix (cacheable/shareable)
 ```
 /about-us.agent
 /blog/hello-world.agent
@@ -529,10 +540,12 @@ Three mechanisms, in priority order:
 ```
 Cacheable by any HTTP cache, shareable, debuggable in any browser, curl-able without special headers.
 
-### Content Negotiation (Fallback)
+### HTML Discovery (recommended)
 ```
-GET /about-us
-Accept: text/agent-view
+<link rel="alternate" type="text/agent-view" href="/about-us.agent">
+<a href="/about-us.agent" rel="alternate agent-view" type="text/agent-view">
+  Agent view of this page
+</a>
 ```
 
 ### Site Manifest
@@ -540,7 +553,7 @@ Accept: text/agent-view
 GET /agent.txt
 
 version: 1
-discovery: [suffix, accept-header]
+discovery: [accept-header, suffix]
 routes:
   - GET /about-us.agent
   - GET /blog/{slug}.agent
@@ -563,41 +576,49 @@ A badge serves three audiences from one HTML element:
 | **AI crawlers** | Structured metadata in `alt` and `title` attributes |
 | **Programmatic scrapers** | `data-*` attributes for machine-readable discovery |
 
-### Basic Badge
+### Basic Page Link
 
 ```html
-<a href="/.agent">
-  <img
-    src="https://raw.githubusercontent.com/frontier-infra/avl/main/assets/avl-badge.svg"
-    alt="AVL agent-ready — This site ships native Agent View Layer documents at /.agent URLs."
-    title="AVL (Agent View Layer) — Producer-side rendering for AI agents"
-  />
+<link rel="alternate" type="text/agent-view" href="/services/water-heater-installation.agent">
+
+<a
+  href="/services/water-heater-installation.agent"
+  rel="alternate agent-view"
+  type="text/agent-view"
+  data-avl-companion="page"
+>
+  Agent view of this page
 </a>
 ```
 
 ### Full Semantic Badge (recommended)
 
-Pack the `alt` text with structured discovery metadata. AI crawlers that parse alt text get everything they need without hitting another endpoint:
+The badge should point at the current page's `.agent` companion, not only
+the site root. Pack the `alt` text with structured discovery metadata, but
+keep the page-specific `href` as the primary machine-readable signal:
 
 ```html
 <div
   role="group"
   aria-label="Platform capabilities"
   data-agent-discovery="true"
-  data-avl-endpoint="/.agent"
+  data-avl-endpoint="/services/water-heater-installation.agent"
   data-avl-manifest="/agent.txt"
   data-avl-package="@frontier-infra/avl"
 >
   <a
-    href="/.agent"
+    href="/services/water-heater-installation.agent"
+    rel="alternate agent-view"
+    type="text/agent-view"
     title="AVL (Agent View Layer) — This site serves parallel structured views
-           for AI agents at /.agent URLs. Same session, zero scraping."
+           for AI agents. Same session, zero scraping."
   >
     <img
       src="https://raw.githubusercontent.com/frontier-infra/avl/main/assets/avl-badge.svg"
-      alt="AVL agent-ready — This site ships native Agent View Layer documents
-           at /.agent URLs. Structured @intent, @state, @actions, and @context
-           for AI agents. Discovery: /agent.txt | npm: @frontier-infra/avl |
+      alt="AVL agent-ready — This page ships an AVL companion at
+           /services/water-heater-installation.agent. Structured @intent,
+           @state, @actions, and @context for AI agents. Discovery:
+           /agent.txt | npm: @frontier-infra/avl |
            Spec: https://github.com/frontier-infra/avl"
     />
     <span title="This site exposes structured agent views at *.agent URLs">
@@ -613,9 +634,9 @@ The AVL philosophy is: **the site already knows what it means — ship that know
 
 - **Pages** know their intent, state, and actions → ship them via `.agent` views
 - **The site** knows its routes and discovery model → ship them via `agent.txt`
-- **The HTML** knows it's agent-ready → ship that via badges with structured alt text
+- **The HTML** knows it's agent-ready → ship that via head alternates, body links, and badges with structured metadata
 
-A decorative badge that says "agent-ready" is a missed opportunity. The same badge with structured `alt`, `title`, and `data-*` attributes becomes a discovery mechanism. An AI crawler parsing the DOM finds the AVL endpoints without making a single extra request.
+A decorative badge that says "agent-ready" is a missed opportunity. The same badge with a page-specific `href`, structured `alt`, `title`, and `data-*` attributes becomes a discovery mechanism. An AI crawler parsing the DOM finds the AVL endpoints without making a single extra request.
 
 This is how [AINode.dev](https://ainode.dev) uses badges — each one carries the full tech stack metadata (AVL endpoints, cluster specs, inference engine, model support) in alt text that agents can parse directly.
 

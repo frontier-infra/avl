@@ -2,6 +2,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ACTIVITY, getJourney } from "@/data/mock";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return {
+    alternates: {
+      types: {
+        "text/agent-view": `/journey/${id}.agent`,
+      },
+    },
+  };
+}
+
 export default async function JourneyPage({
   params,
 }: {
@@ -17,7 +32,13 @@ export default async function JourneyPage({
     <>
       <h1>
         {journey.client}
-        <Link className="agent-link" href={`/journey/${journey.id}.agent`}>
+        <Link
+          className="agent-link"
+          href={`/journey/${journey.id}.agent`}
+          rel="alternate agent-view"
+          type="text/agent-view"
+          data-avl-companion="page"
+        >
           .agent
         </Link>
       </h1>

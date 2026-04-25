@@ -1,7 +1,17 @@
 import { serialize } from "./serialize";
 import { resolveAgentView } from "./registry";
+import {
+  renderAgentViewBodyLink,
+  renderAgentViewHeadLinks,
+  renderAgentViewLinkHeader,
+  resolveAgentViewPath,
+} from "./discovery";
 import type { RegistryEntry } from "./registry";
 import type { AgentSession } from "./types";
+import type {
+  AgentViewBodyLinkOptions,
+  AgentViewHeadLinkOptions,
+} from "./discovery";
 
 const CT = "text/agent-view; version=1";
 
@@ -10,6 +20,8 @@ export type AgentViewHandlerOptions = {
   resolveSession: (req: Request) => Promise<AgentSession | null>;
   /** Registered agent view routes. */
   routes: RegistryEntry[];
+  /** Manifest URL advertised in Link headers. Defaults to "/agent.txt". */
+  manifestPath?: string;
 };
 
 /**
@@ -30,6 +42,11 @@ export function createAgentViewHandler(options: AgentViewHandlerOptions) {
     const { path } = await params;
     const route = "/" + (path?.join("/") ?? "");
     const trimmed = route === "/" ? "/" : route.replace(/\/$/, "");
+    const headers = agentViewResponseHeaders(
+      trimmed,
+      options.manifestPath,
+      new URL(req.url).origin
+    );
 
     const resolved = resolveAgentView(options.routes, trimmed);
     if (!resolved) {
@@ -39,7 +56,7 @@ export function createAgentViewHandler(options: AgentViewHandlerOptions) {
         `  audience:   any\n  capability: none\n`;
       return new Response(body, {
         status: 404,
-        headers: { "Content-Type": CT },
+        headers,
       });
     }
 
@@ -51,7 +68,7 @@ export function createAgentViewHandler(options: AgentViewHandlerOptions) {
         `  audience:   any\n  capability: none\n`;
       return new Response(body, {
         status: 401,
-        headers: { "Content-Type": CT },
+        headers,
       });
     }
 
@@ -71,17 +88,45 @@ export function createAgentViewHandler(options: AgentViewHandlerOptions) {
       },
       ...partial,
       nav: partial.nav
-        ? { self: `${trimmed}.agent`, ...partial.nav }
+        ? { self: resolveAgentViewPath({ path: trimmed }), ...partial.nav }
         : undefined,
     });
 
     return new Response(body, {
       headers: {
-        "Content-Type": CT,
+        ...headers,
         "Cache-Control": "private, max-age=30",
       },
     });
   };
+}
+
+function agentViewResponseHeaders(
+  route: string,
+  manifestPath = "/agent.txt",
+  origin?: string
+) {
+  return {
+    "Content-Type": CT,
+    "Vary": "Accept, Cookie, Authorization",
+    "Link": renderAgentViewLinkHeader({ path: route, manifestPath, origin }),
+    "X-Agent-View-Version": "1",
+  };
+}
+
+/**
+ * Dependency-free helper for Next metadata/head integrations.
+ *
+ * For server components, render this string in a custom head or use the core
+ * helper from "@frontier-infra/avl" if your framework owns document markup.
+ */
+export function agentViewHeadLinks(options: AgentViewHeadLinkOptions): string {
+  return renderAgentViewHeadLinks(options);
+}
+
+/** Render the body-level per-page discovery anchor for a Next page/footer. */
+export function agentViewBodyLink(options: AgentViewBodyLinkOptions): string {
+  return renderAgentViewBodyLink(options);
 }
 
 export type { AgentViewHandlerOptions as CreateAgentViewHandlerOptions };
