@@ -2,7 +2,7 @@
 
 A tiny static site for a fictional local electrician ("Lonestar Electric"), showing how AVL ships a parallel agent view for marketing pages — **and how to make those agent views discoverable from every human page**.
 
-Demonstrates:
+## What this shows
 
 - `defineStaticAgentView` authoring for **3 different page types** a marketing site typically has (home, about, service area)
 - `generateStaticAgentViews` emitting one `.agent` file per URL
