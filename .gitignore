@@ -18,6 +18,17 @@ HANDOFF.md
 .env.local
 .env.*.local
 
+# local agent/runtime settings
+.claude/settings*.json
+.codex/settings*.json
+.gemini/settings*.json
+.gemini/extensions/
+
+# packaged release artifacts
+*.zip
+*.tar
+*.tgz
+
 # editor
 .vscode/
 .idea/

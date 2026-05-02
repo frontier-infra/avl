@@ -1,0 +1,16 @@
+{
+  "name": "directus-extension-avl",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent View Layer endpoint extension for Directus",
+  "directus:extension": {
+    "type": "endpoint",
+    "path": "dist/index.js",
+    "source": "src/index.js",
+    "host": "^11.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
+}

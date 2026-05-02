@@ -1,0 +1,79 @@
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${WORDPRESS_DB_NAME:-avl_wordpress}
+      MARIADB_USER: ${WORDPRESS_DB_USER:-avl_wp_user}
+      MARIADB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-change-me-local-password}
+      MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ROOT_PASSWORD:-change-me-local-root-password}
+    volumes:
+      - avl_wp_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  wordpress:
+    image: wordpress:6.9-php8.3-apache
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${WORDPRESS_PORT:-49217}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-avl_wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-avl_wp_user}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-change-me-local-password}
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'DISALLOW_FILE_EDIT', true );
+        define( 'AUTOMATIC_UPDATER_DISABLED', true );
+        define( 'WP_ENVIRONMENT_TYPE', 'local' );
+    volumes:
+      - avl_wp_html:/var/www/html
+      - ./avl-agent-view-layer:/var/www/html/wp-content/plugins/avl-agent-view-layer:ro
+      - ./page-builders/avl-divi-badge:/var/www/html/wp-content/plugins/avl-divi-badge:ro
+      - ./page-builders/avl-elementor-badge:/var/www/html/wp-content/plugins/avl-elementor-badge:ro
+      - ./page-builders/avl-beaver-badge:/var/www/html/wp-content/plugins/avl-beaver-badge:ro
+      - ./page-builders/avl-block-badge:/var/www/html/wp-content/plugins/avl-block-badge:ro
+      - ./page-builders/avl-bricks-badge:/var/www/html/wp-content/plugins/avl-bricks-badge:ro
+      - ./page-builders/avl-bakery-badge:/var/www/html/wp-content/plugins/avl-bakery-badge:ro
+      - ./page-builders/avl-avada-badge:/var/www/html/wp-content/plugins/avl-avada-badge:ro
+      - ./page-builders/avl-oxygen-badge:/var/www/html/wp-content/plugins/avl-oxygen-badge:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/wp-login.php >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  cli:
+    image: wordpress:cli-2.11.0-php8.3
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-avl_wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-avl_wp_user}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-change-me-local-password}
+    volumes:
+      - avl_wp_html:/var/www/html
+      - ./avl-agent-view-layer:/var/www/html/wp-content/plugins/avl-agent-view-layer:ro
+      - ./page-builders/avl-divi-badge:/var/www/html/wp-content/plugins/avl-divi-badge:ro
+      - ./page-builders/avl-elementor-badge:/var/www/html/wp-content/plugins/avl-elementor-badge:ro
+      - ./page-builders/avl-beaver-badge:/var/www/html/wp-content/plugins/avl-beaver-badge:ro
+      - ./page-builders/avl-block-badge:/var/www/html/wp-content/plugins/avl-block-badge:ro
+      - ./page-builders/avl-bricks-badge:/var/www/html/wp-content/plugins/avl-bricks-badge:ro
+      - ./page-builders/avl-bakery-badge:/var/www/html/wp-content/plugins/avl-bakery-badge:ro
+      - ./page-builders/avl-avada-badge:/var/www/html/wp-content/plugins/avl-avada-badge:ro
+      - ./page-builders/avl-oxygen-badge:/var/www/html/wp-content/plugins/avl-oxygen-badge:ro
+    working_dir: /var/www/html
+    entrypoint: ["wp"]
+
+volumes:
+  avl_wp_db:
+  avl_wp_html:

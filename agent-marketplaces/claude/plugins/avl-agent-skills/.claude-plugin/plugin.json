@@ -1,0 +1,8 @@
+{
+  "name": "avl-agent-skills",
+  "description": "Adds AVL CMS adapter skills for building CMS and site-builder integrations.",
+  "version": "0.1.0",
+  "author": {
+    "name": "AVL"
+  }
+}

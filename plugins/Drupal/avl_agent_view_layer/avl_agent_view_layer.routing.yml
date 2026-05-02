@@ -1,0 +1,35 @@
+avl_agent_view_layer.manifest:
+  path: '/agent.txt'
+  defaults:
+    _controller: '\Drupal\avl_agent_view_layer\Controller\AvlController::manifest'
+  requirements:
+    _access: 'TRUE'
+
+avl_agent_view_layer.llms:
+  path: '/llms.txt'
+  defaults:
+    _controller: '\Drupal\avl_agent_view_layer\Controller\AvlController::llms'
+  requirements:
+    _access: 'TRUE'
+
+avl_agent_view_layer.lm:
+  path: '/lm.txt'
+  defaults:
+    _controller: '\Drupal\avl_agent_view_layer\Controller\AvlController::llms'
+  requirements:
+    _access: 'TRUE'
+
+avl_agent_view_layer.site:
+  path: '/.agent'
+  defaults:
+    _controller: '\Drupal\avl_agent_view_layer\Controller\AvlController::site'
+  requirements:
+    _access: 'TRUE'
+
+avl_agent_view_layer.content:
+  path: '/{path}.agent'
+  defaults:
+    _controller: '\Drupal\avl_agent_view_layer\Controller\AvlController::content'
+  requirements:
+    _access: 'TRUE'
+    path: '.+'

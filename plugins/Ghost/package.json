@@ -1,0 +1,15 @@
+{
+  "name": "avl-ghost-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Ghost companion gateway for Agent View Layer",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "package": "bash scripts/package.sh"
+  }
+}

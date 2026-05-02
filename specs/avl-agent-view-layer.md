@@ -11,6 +11,8 @@
 | Reference impl | Next.js 16 / App Router |
 | Companion docs | `avl-thesis.md` (problem/solution thesis) |
 | | `avl-auth-thesis.md` (authentication model) |
+| | `../CONFORMANCE.md` (conformance levels and validator roadmap) |
+| | `avl-vnext-proposals.md` (experimental protocol proposals) |
 
 ---
 

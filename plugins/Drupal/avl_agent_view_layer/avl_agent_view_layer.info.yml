@@ -1,0 +1,5 @@
+name: AVL Agent View Layer
+type: module
+description: Publishes Agent View Layer companions and discovery metadata for public Drupal content.
+package: AVL
+core_version_requirement: ^10 || ^11

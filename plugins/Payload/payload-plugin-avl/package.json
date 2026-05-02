@@ -1,0 +1,13 @@
+{
+  "name": "payload-plugin-avl",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent View Layer plugin for Payload CMS",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "peerDependencies": {
+    "payload": "^3.0.0"
+  }
+}

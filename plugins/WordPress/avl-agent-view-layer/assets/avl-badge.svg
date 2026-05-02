@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="20" role="img" aria-label="AVL: agent-ready">
+  <title>AVL: agent-ready</title>
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#fff" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="120" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="40" height="20" fill="#333"/>
+    <rect x="40" width="80" height="20" fill="#0e7c2e"/>
+    <rect width="120" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="11">
+    <text aria-hidden="true" x="20" y="15" fill="#010101" fill-opacity=".3">AVL</text>
+    <text x="20" y="14" fill="#fff">AVL</text>
+    <text aria-hidden="true" x="79" y="15" fill="#010101" fill-opacity=".3">agent-ready</text>
+    <text x="79" y="14" fill="#fff">agent-ready</text>
+  </g>
+</svg>

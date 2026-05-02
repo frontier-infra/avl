@@ -332,6 +332,65 @@ Runnable examples:
 
 ---
 
+## AVL for CMS Plugins
+
+Public CMS pages are a natural fit for AVL: the CMS already owns the route,
+title, excerpt, taxonomy, author, and permalink. An AVL plugin just renders
+that same CMS record as a `.agent` companion and advertises discovery from the
+human page.
+
+The first production CMS plugin lives in [`plugins/WordPress`](plugins/WordPress):
+
+- `GET /agent.txt` publishes a site-level AVL manifest.
+- `GET /.agent` publishes the front page companion.
+- `GET /some-page.agent` publishes an agent view for public posts, pages, and
+  custom post types.
+- Public human pages advertise their companion with head links, `Link` headers,
+  and badge metadata.
+- The admin panel controls badge type, colors, placement, post types, TTL, and
+  WordPress framework compatibility.
+- Optional page-builder add-ons support Divi, Elementor, and Beaver Builder.
+
+The Ghost work area lives in [`plugins/Ghost`](plugins/Ghost). Ghost does not
+map cleanly to WordPress-style plugins, so that adapter is structured as a
+helper service and document renderer that can be connected through Ghost Content
+API, theme, static-generation, or reverse-proxy routes.
+
+The folder is intentionally named by CMS so additional adapters can follow the
+same pattern later: `plugins/Drupal`, `plugins/Joomla`, `plugins/ConcreteCMS`,
+`plugins/TYPO3`, `plugins/Grav`, and so on. See
+[`docs/cms-adapters.md`](docs/cms-adapters.md) for the shared adapter contract.
+
+---
+
+## Agent Skills And Marketplace Packages
+
+AVL also ships an agent skill for building CMS adapters consistently across
+Codex, Claude Code, Gemini CLI, and future agent runtimes.
+
+The canonical skill lives in [`agent-skills/avl-cms-adapter`](agent-skills/avl-cms-adapter).
+Generated deploy copies live in:
+
+- [`.codex/skills/avl-cms-adapter`](.codex/skills/avl-cms-adapter)
+- [`.claude/skills/avl-cms-adapter`](.claude/skills/avl-cms-adapter)
+- [`.gemini/skills/avl-cms-adapter`](.gemini/skills/avl-cms-adapter)
+- [`agent-marketplaces/claude`](agent-marketplaces/claude) for Claude Code
+  marketplace packaging
+- [`agent-extensions/gemini/avl-agent-skills`](agent-extensions/gemini/avl-agent-skills)
+  for Gemini CLI extension packaging
+
+After editing the canonical skill, sync and validate every deploy target:
+
+```bash
+agent-skills/scripts/sync-skill-targets.sh
+agent-skills/scripts/validate-skills.sh
+```
+
+See [`docs/agent-skills.md`](docs/agent-skills.md) and
+[`docs/skill-deployment.md`](docs/skill-deployment.md) for the full workflow.
+
+---
+
 ## Getting Started
 
 ### Installation
@@ -670,8 +729,15 @@ This is how [AINode.dev](https://ainode.dev) uses badges — each one carries th
 ## Documentation
 
 - **[Full Specification](specs/avl-agent-view-layer.md)** — Format grammar, conformance levels, security model
+- **[Conformance](CONFORMANCE.md)** — L0-L3 checks, discovery requirements, and validator roadmap
+- **[Governance](GOVERNANCE.md)** — Proposal process, spec versioning, and standards-track path
+- **[vNext Proposals](specs/avl-vnext-proposals.md)** — Companion links, provenance, well-known discovery, media, and validator ideas
 - **[AVL Thesis](specs/avl-thesis.md)** — The problem, the solution, why now
 - **[Auth Thesis](specs/avl-auth-thesis.md)** — Same session, different render. Zero new auth surface.
+- **[Adoption Strategy](docs/adoption-strategy.md)** — Ecosystem rollout, validation, CMS plugins, and standards positioning
+- **[CMS Adapters](docs/cms-adapters.md)** — WordPress, Ghost, page builders, and the shared plugin contract
+- **[Agent Skills](docs/agent-skills.md)** — Canonical AVL CMS adapter skill and runtime deploy targets
+- **[Skill Deployment](docs/skill-deployment.md)** — Codex, Claude Code marketplace, and Gemini CLI extension setup
 - **[Examples](examples/)** — Runnable demos across four page types
 
 ---
