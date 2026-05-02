@@ -2,6 +2,8 @@
 
 AVL does not require Next.js. A producer only needs to render `text/agent-view; version=1` alongside each human page.
 
+For an AI-agent-ready implementation brief, use `AI-IMPLEMENTATION.md` from the repository root.
+
 ## Universal Pattern
 
 1. Identify the human route.

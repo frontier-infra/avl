@@ -399,6 +399,13 @@ See [`docs/agent-skills.md`](docs/agent-skills.md) and
 npm install @frontier-infra/avl
 ```
 
+### Using An AI Coding Agent
+
+If you want an AI coding agent to add AVL to a project, point it at
+[`AI-IMPLEMENTATION.md`](AI-IMPLEMENTATION.md). It is a self-contained
+implementation brief with required routes, document sections, discovery
+signals, security rules, framework patterns, and a validation checklist.
+
 ### If your page is static
 
 Author a `defineStaticAgentView` config per page (see [AVL for Static Sites](#avl-for-static-sites) above) and call `generateStaticAgentViews` as a final step of your build.
@@ -729,6 +736,7 @@ This is how [AINode.dev](https://ainode.dev) uses badges — each one carries th
 ## Documentation
 
 - **[Full Specification](specs/avl-agent-view-layer.md)** — Format grammar, conformance levels, security model
+- **[AI Implementation Brief](AI-IMPLEMENTATION.md)** — One file to give an AI coding agent so it can implement AVL in a project
 - **[Conformance](CONFORMANCE.md)** — L0-L3 checks, discovery requirements, and validator roadmap
 - **[Governance](GOVERNANCE.md)** — Proposal process, spec versioning, and standards-track path
 - **[vNext Proposals](specs/avl-vnext-proposals.md)** — Companion links, provenance, well-known discovery, media, and validator ideas
