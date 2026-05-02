@@ -24,6 +24,19 @@ export {
   generateStaticAgentViews,
   defaultResolveOutputPath,
 } from "./static";
+export {
+  parseAgentViewSections,
+  validateAgentViewText,
+  validateToonState,
+} from "./validator";
+export type {
+  AgentViewSections,
+  ConformanceLevel,
+  ValidationCheck,
+  ValidationReport,
+  ValidationStatus,
+  ValidateAgentViewOptions,
+} from "./validator";
 export type {
   DefinedStaticAgentView,
   GenerateStaticAgentViewsOptions,
