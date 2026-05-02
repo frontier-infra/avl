@@ -1,6 +1,6 @@
 {
   "name": "@frontier-infra/avl",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Agent View Layer — producer-side rendering for AI agents",
   "license": "MIT",
   "author": "Argent OS",
@@ -48,6 +48,7 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "test": "tsx --test src/*.test.ts",
+    "test:plugins": "bash plugins/scripts/test-adapters.sh",
     "prepare": "npm run build"
   },
   "devDependencies": {

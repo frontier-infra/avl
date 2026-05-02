@@ -1,0 +1,15 @@
+{
+  "name": "strapi-plugin-avl",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Agent View Layer plugin for Strapi",
+  "strapi": {
+    "name": "avl",
+    "displayName": "AVL Agent View Layer",
+    "description": "Publishes Agent View Layer companion metadata for Strapi content."
+  },
+  "scripts": {
+    "test": "node --test test/*.test.cjs"
+  }
+}

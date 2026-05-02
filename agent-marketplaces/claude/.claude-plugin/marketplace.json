@@ -1,0 +1,18 @@
+{
+  "name": "avl-skills",
+  "description": "AVL agent skills for CMS, site-builder, and plugin marketplace integrations.",
+  "version": "0.1.0",
+  "owner": {
+    "name": "AVL"
+  },
+  "plugins": [
+    {
+      "name": "avl-agent-skills",
+      "source": "./plugins/avl-agent-skills",
+      "description": "Adds AVL CMS adapter skills for building CMS and site-builder integrations.",
+      "version": "0.1.0",
+      "category": "development",
+      "tags": ["cms", "wordpress", "ghost", "skills", "avl"]
+    }
+  ]
+}

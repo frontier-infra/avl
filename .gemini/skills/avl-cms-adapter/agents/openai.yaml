@@ -1,0 +1,4 @@
+interface:
+  display_name: "AVL CMS Adapter"
+  short_description: "Build AVL CMS adapter skills"
+  default_prompt: "Use this skill when building, reviewing, testing, packaging, or deploying Agent View Layer adapters for WordPress, Ghost, Framer, Joomla, Drupal, Concrete CMS, TYPO3, Grav, or similar CMS and site-builder platforms."

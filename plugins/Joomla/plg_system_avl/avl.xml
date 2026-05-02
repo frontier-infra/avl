@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="system" method="upgrade">
+	<name>plg_system_avl</name>
+	<author>Frontier Infra</author>
+	<version>0.1.0</version>
+	<description>Publishes Agent View Layer companions and discovery metadata for Joomla sites.</description>
+	<namespace path="src">Joomla\Plugin\System\Avl</namespace>
+	<files>
+		<folder plugin="avl">services</folder>
+		<folder>src</folder>
+	</files>
+</extension>
