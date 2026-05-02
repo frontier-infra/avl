@@ -22,6 +22,8 @@ The easiest adoption path is L0:
 
 This gives agents route purpose and triage value without requiring full data/action modeling.
 
+For non-Next.js implementations, use `docs/frameworks/non-next-getting-started.md`.
+
 ### CMS Plugins
 
 CMS plugins make AVL concrete for non-framework users. Priority ecosystems:
@@ -45,6 +47,8 @@ Adoption needs objective proof. Build a validator that can say:
 - Actions are declared safely.
 
 AEOCheck.ai can be a sister-service validation surface while the open-source repo owns the conformance rules.
+
+The badge program in `docs/marketing/badge-program.md` should be tied to validator output before public launch.
 
 ### Framework Adapters
 
@@ -78,6 +82,7 @@ Useful audiences:
 5. Add optional provenance fields.
 6. Collect production adopters.
 7. Publish an implementation registry.
+8. Publish the v0.2 announcement and collect outside implementer feedback.
 
 ## Success Metrics
 

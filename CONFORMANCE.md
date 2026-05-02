@@ -81,6 +81,14 @@ Check groups:
 - `avl.auth`
 - `avl.provenance`
 
+Initial grammar and document fixtures live under:
+
+```text
+specs/toon-grammar.md
+specs/fixtures/valid/
+specs/fixtures/invalid/
+```
+
 ## CMS Adapter Conformance
 
 CMS plugins should verify:

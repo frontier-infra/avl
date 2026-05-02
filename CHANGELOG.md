@@ -34,6 +34,7 @@ The format follows Keep a Changelog style, and this project uses semantic versio
 - Added skill sync and validation scripts.
 - Added documentation for CMS adapters, agent skills, and skill deployment.
 - Added conformance, governance, vNext proposal, and adoption strategy documents to capture outside-review feedback and standards-track planning.
+- Added TOON grammar draft, discovery guidance, fixtures, non-Next.js getting-started guide, badge-program concept, and announcement draft for adoption work.
 
 ### Changed
 
