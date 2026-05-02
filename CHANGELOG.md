@@ -35,6 +35,7 @@ The format follows Keep a Changelog style, and this project uses semantic versio
 - Added documentation for CMS adapters, agent skills, and skill deployment.
 - Added conformance, governance, vNext proposal, and adoption strategy documents to capture outside-review feedback and standards-track planning.
 - Added TOON grammar draft, discovery guidance, fixtures, non-Next.js getting-started guide, badge-program concept, and announcement draft for adoption work.
+- Added `AI-IMPLEMENTATION.md`, a single-file brief developers can give to AI coding agents to implement AVL in another project.
 
 ### Changed
 

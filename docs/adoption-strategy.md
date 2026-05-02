@@ -12,6 +12,15 @@ Do not position AVL as a replacement for existing standards. It is the page-leve
 
 ## Adoption Wedges
 
+### AI Implementation Brief
+
+Many developers now point their coding agent at a single canonical page and ask
+it to implement the feature. AVL should support that workflow directly.
+
+Use `AI-IMPLEMENTATION.md` as the handoff file for coding agents. It includes
+the required routes, document sections, discovery signals, security rules,
+implementation patterns, and validation checklist in one place.
+
 ### L0 First
 
 The easiest adoption path is L0:
