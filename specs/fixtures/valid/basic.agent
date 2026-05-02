@@ -1,0 +1,27 @@
+@meta
+  v: 1
+  route: /pricing
+  generated: 2026-05-02T12:00:00Z
+  ttl: 5m
+
+@intent
+  purpose: Pricing page
+  audience: visitor, buyer, agent
+  capability: read, compare, buy
+
+@state
+  plans[2]{id,name,price_usd}:
+    starter,Starter,19
+    pro,Pro,49
+
+@actions
+  - id: view_human
+    method: GET
+    href: /pricing
+
+@context
+  > Two public pricing plans are available.
+
+@nav
+  self: /pricing.agent
+  parents: [/.agent]

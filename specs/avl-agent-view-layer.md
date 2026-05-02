@@ -13,6 +13,8 @@
 | | `avl-auth-thesis.md` (authentication model) |
 | | `../CONFORMANCE.md` (conformance levels and validator roadmap) |
 | | `avl-vnext-proposals.md` (experimental protocol proposals) |
+| | `toon-grammar.md` (draft TOON grammar) |
+| | `discovery.md` (discovery conventions and well-known proposals) |
 
 ---
 

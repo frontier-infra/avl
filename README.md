@@ -732,9 +732,14 @@ This is how [AINode.dev](https://ainode.dev) uses badges — each one carries th
 - **[Conformance](CONFORMANCE.md)** — L0-L3 checks, discovery requirements, and validator roadmap
 - **[Governance](GOVERNANCE.md)** — Proposal process, spec versioning, and standards-track path
 - **[vNext Proposals](specs/avl-vnext-proposals.md)** — Companion links, provenance, well-known discovery, media, and validator ideas
+- **[TOON Grammar Draft](specs/toon-grammar.md)** — Draft grammar and fixtures for token-efficient state
+- **[Discovery](specs/discovery.md)** — `.agent`, `/agent.txt`, `llms.txt`, well-known, HTML, HTTP, and robots hints
 - **[AVL Thesis](specs/avl-thesis.md)** — The problem, the solution, why now
 - **[Auth Thesis](specs/avl-auth-thesis.md)** — Same session, different render. Zero new auth surface.
 - **[Adoption Strategy](docs/adoption-strategy.md)** — Ecosystem rollout, validation, CMS plugins, and standards positioning
+- **[Non-Next.js Guide](docs/frameworks/non-next-getting-started.md)** — Universal implementation pattern for other stacks
+- **[Badge Program](docs/marketing/badge-program.md)** — L0-L3 badge criteria and adopter directory concept
+- **[Announcement Draft](docs/marketing/announcement-draft.md)** — Launch copy for the v0.2 release candidate
 - **[CMS Adapters](docs/cms-adapters.md)** — WordPress, Ghost, page builders, and the shared plugin contract
 - **[Agent Skills](docs/agent-skills.md)** — Canonical AVL CMS adapter skill and runtime deploy targets
 - **[Skill Deployment](docs/skill-deployment.md)** — Codex, Claude Code marketplace, and Gemini CLI extension setup
