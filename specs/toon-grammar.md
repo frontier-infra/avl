@@ -107,4 +107,9 @@ specs/fixtures/valid/
 specs/fixtures/invalid/
 ```
 
-They are intended to seed a future `avl validate-file` command.
+They seed the package validator and can be checked directly:
+
+```bash
+npx @frontier-infra/avl validate-file specs/fixtures/valid/basic.agent
+npx @frontier-infra/avl validate-file specs/fixtures/invalid/mismatched-table.agent
+```

@@ -23,6 +23,9 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "avl": "./dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -33,6 +36,11 @@
       "types": "./dist/next.d.ts",
       "import": "./dist/next.js",
       "require": "./dist/next.cjs"
+    },
+    "./validator": {
+      "types": "./dist/validator.d.ts",
+      "import": "./dist/validator.js",
+      "require": "./dist/validator.cjs"
     }
   },
   "publishConfig": {
@@ -40,6 +48,9 @@
   },
   "files": [
     "dist",
+    "AI-IMPLEMENTATION.md",
+    "CONFORMANCE.md",
+    "specs",
     "LICENSE",
     "README.md"
   ],
