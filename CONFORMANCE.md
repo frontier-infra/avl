@@ -60,26 +60,29 @@ Recommended discovery stack:
 - `@actions` must only list actions available to the represented viewer.
 - External validation links must be user-initiated unless the plugin clearly discloses automatic calls.
 
-## Validator Roadmap
+## Validator
 
-The next validator should support:
+The root package ships a first-party validator CLI:
 
 ```bash
-avl validate https://example.com
-avl validate --level L2 https://example.com/pricing
-avl validate-file ./samples/page.agent
+npx @frontier-infra/avl validate https://example.com
+npx @frontier-infra/avl validate https://example.com/pricing --level L2
+npx @frontier-infra/avl validate-file ./samples/page.agent --json
 ```
 
 Check groups:
 
-- `avl.document`
-- `avl.discovery`
-- `avl.manifest`
-- `avl.llms`
-- `avl.schema`
-- `avl.actions`
-- `avl.auth`
-- `avl.provenance`
+- `document.*`
+- `toon.*`
+- `discovery.*`
+- `manifest.*`
+- `companion.*`
+- `conformance.*`
+
+The initial validator checks required sections and fields, TOON list/table
+shape, page-specific `.agent` discovery, `/agent.txt`, HTML discovery links,
+and `/llms.txt` companion availability. Future versions should expand this
+into schema, auth, action input, and provenance-specific checks.
 
 Initial grammar and document fixtures live under:
 

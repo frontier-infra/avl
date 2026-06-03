@@ -406,6 +406,24 @@ If you want an AI coding agent to add AVL to a project, point it at
 implementation brief with required routes, document sections, discovery
 signals, security rules, framework patterns, and a validation checklist.
 
+### Validate a site or file
+
+Use the first-party validator to check conformance from a URL or local
+`.agent` file:
+
+```bash
+npx @frontier-infra/avl validate https://example.com
+npx @frontier-infra/avl validate-file ./pricing.agent --level L2
+```
+
+The validator reports the detected L0-L3 level, required document fields,
+TOON table/list checks, discovery signals, `/agent.txt`, and `/llms.txt`
+companion readiness. Use `--json` for CI, badges, and automation:
+
+```bash
+npx @frontier-infra/avl validate https://example.com --json
+```
+
 ### If your page is static
 
 Author a `defineStaticAgentView` config per page (see [AVL for Static Sites](#avl-for-static-sites) above) and call `generateStaticAgentViews` as a final step of your build.
@@ -532,6 +550,14 @@ Start at L0. Ship value at every step.
 | **L3** | L2 + `@nav`, `@context` | Weeks | Agents can traverse and understand the "so what" |
 
 A static site can hit L3 in an afternoon. A medium-sized app can ship L0 across every route in a single day. No data integration, no action wiring for L0 — just a minimal `agent.ts` per route declaring intent plus a page-specific body link to the companion view. Any AI agent can already scan the site and build a map of what every page does and who it's for.
+
+Run the validator before publishing:
+
+```bash
+npx @frontier-infra/avl validate https://example.com --level L0
+```
+
+See [`CONFORMANCE.md`](CONFORMANCE.md) for the detailed check matrix.
 
 ---
 

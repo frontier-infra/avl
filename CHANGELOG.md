@@ -8,6 +8,8 @@ The format follows Keep a Changelog style, and this project uses semantic versio
 
 ### Added
 
+- Added first-party `avl` validator CLI with `validate` and `validate-file` commands.
+- Added reusable validator exports for AVL document sections, L0-L3 inference, and TOON list/table checks.
 - Added the WordPress AVL plugin under `plugins/WordPress/avl-agent-view-layer`.
 - Added local WordPress Docker QA on port `49217`.
 - Added WordPress admin controls for badge type, colors, placement, post types, TTL, and framework compatibility.
