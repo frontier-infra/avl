@@ -2,6 +2,11 @@
 
 AVL conformance is intentionally layered so a site can become agent-readable in small, useful steps.
 
+> **Not a Machine deployment.** This is the **AVL** (Agent View Layer) document-conformance ladder
+> for agent-readable web pages, *not* [The Machine](https://github.com/frontier-infra/the-machine)'s
+> six-box *deployment* conformance — different ladder, same L0–L3 naming. The Machine's `kit` does
+> not meaningfully score this repo: AVL is a web-protocol standard, not a long-running agent.
+
 ## Levels
 
 | Level | Required Signals | Purpose |
