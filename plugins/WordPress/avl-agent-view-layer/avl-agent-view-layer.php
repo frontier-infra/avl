@@ -2,6 +2,7 @@
 /**
  * Plugin Name: AVL Agent View Layer
  * Plugin URI: https://github.com/frontier-infra/avl
+ * Update URI: https://github.com/frontier-infra/avl
  * Description: Publishes Agent View Layer companions for public WordPress content at /.agent, /path.agent, and /agent.txt.
  * Version: 0.2.0
  * Requires at least: 6.4
@@ -37,6 +38,60 @@ add_action( 'wp_head', 'avl_wp_render_head_discovery' );
 add_action( 'wp_body_open', 'avl_wp_render_body_discovery' );
 add_action( 'wp_footer', 'avl_wp_render_footer_discovery' );
 add_shortcode( 'avl_badge', 'avl_wp_badge_shortcode' );
+
+/**
+ * GitHub-releases self-updater — surfaces "Update Now" on the Plugins screen.
+ *
+ * AVL ships from a monorepo, so the checker (1) downloads the built release ASSET zip,
+ * never the repo source zipball; (2) only considers this plugin's own releases (tag
+ * prefix "avl-wp-v"); and (3) strips that prefix back to a clean semver, because a
+ * subdirectory plugin defeats PUC's repo-root header read. See readme.txt Changelog.
+ */
+$avl_wp_puc_loader = plugin_dir_path( __FILE__ ) . 'lib/plugin-update-checker/plugin-update-checker.php';
+if ( file_exists( $avl_wp_puc_loader ) ) {
+	require_once $avl_wp_puc_loader;
+
+	$avl_wp_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+		'https://github.com/frontier-infra/avl/',
+		__FILE__,
+		'avl-agent-view-layer'
+	);
+
+	$avl_wp_github_api = $avl_wp_update_checker->getVcsApi();
+
+	// Only this plugin's namespaced releases; ignore the monorepo's own v1.0.0 etc.
+	$avl_wp_github_api->setReleaseFilter(
+		static function ( $version_number, $release ) {
+			return isset( $release->tag_name ) && 0 === strpos( (string) $release->tag_name, 'avl-wp-v' );
+		},
+		\YahnisElsts\PluginUpdateChecker\v5p7\Vcs\Api::RELEASE_FILTER_SKIP_PRERELEASE,
+		25
+	);
+
+	// Install the built plugin zip (release asset), never the whole-monorepo source zipball.
+	$avl_wp_github_api->enableReleaseAssets(
+		'/avl-agent-view-layer\.zip$/i',
+		\YahnisElsts\PluginUpdateChecker\v5p7\Vcs\Api::REQUIRE_RELEASE_ASSETS
+	);
+
+	// Tag "avl-wp-v0.3.0" -> clean "0.3.0" for version_compare (PUC can't read the
+	// header from the monorepo root, so it would otherwise compare the whole tag string).
+	$avl_wp_update_checker->addFilter(
+		'request_info_result',
+		static function ( $info ) {
+			if ( $info && ! empty( $info->version ) ) {
+				$info->version = preg_replace( '/^avl-wp-v/', '', (string) $info->version );
+			}
+			return $info;
+		}
+	);
+
+	// Optional: a fine-grained PAT (Contents: read) lifts GitHub's 60/hr unauthenticated
+	// limit to 5000/hr when many sites share a host egress IP. Define AVL_GITHUB_TOKEN.
+	if ( defined( 'AVL_GITHUB_TOKEN' ) && AVL_GITHUB_TOKEN ) {
+		$avl_wp_github_api->setAuthentication( AVL_GITHUB_TOKEN );
+	}
+}
 
 function avl_wp_activate(): void {
 	add_option( AVL_WP_OPTION, avl_wp_default_options() );

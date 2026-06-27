@@ -69,6 +69,7 @@ Yes. Use `[avl_badge]` in Divi, Elementor, Beaver Builder, Avada, Bricks, Oxygen
 * New `avl_agent_view_rendered_text` filter lets membership / visibility plugins redact body text (AVL renders blocks directly and does not run the the_content filter chain).
 * Body extraction is memoized per request and preserves word boundaries across block edges; the auto-excerpt is dropped when full content is present (no triplicated prose); password-protected @context no longer reveals the publish date.
 * Serializer now quotes scalars that would otherwise parse back as a boolean, number, or null.
+* Self-updates from GitHub releases: the Plugins screen now shows "Update Now" for new AVL releases (bundles Plugin Update Checker, release-asset based; adds the Update URI header).
 
 = 0.1.0 =
 

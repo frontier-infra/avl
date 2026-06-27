@@ -9,7 +9,7 @@ mkdir -p dist
 zip -r dist/avl-agent-view-layer.zip avl-agent-view-layer \
   -x '*/.DS_Store' \
   -x '*/node_modules/*' \
-  -x '*/vendor/*'
+  -x 'avl-agent-view-layer/vendor/*'
 
 unzip -l dist/avl-agent-view-layer.zip >/dev/null
 echo "Built $ROOT/dist/avl-agent-view-layer.zip"
