@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/frontier-infra/avl
  * Update URI: https://github.com/frontier-infra/avl
  * Description: Publishes Agent View Layer companions for public WordPress content at /.agent, /path.agent, and /agent.txt.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Author: Frontier Infra
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AVL_WP_VERSION', '0.2.0' );
+define( 'AVL_WP_VERSION', '0.3.0' );
 define( 'AVL_WP_OPTION', 'avl_agent_view_layer_options' );
 define( 'AVL_WP_AGENT_ROOT', '__root__' );
 define( 'AVL_WP_CONTENT_TYPE', 'text/agent-view; version=1; charset=utf-8' );
