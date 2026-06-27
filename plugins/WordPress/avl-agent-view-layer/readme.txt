@@ -4,7 +4,7 @@ Tags: ai, agents, accessibility, structured-data, cms
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,7 +36,7 @@ The plugin does not send data to external services. A visible AVL badge is avail
 
 = Does this expose private content? =
 
-No. Version 0.1.0 resolves only published public content from enabled public post types.
+No. Version 0.2.0 resolves only published public content from enabled public post types, and omits the body and excerpt of password-protected posts.
 
 = Does this call an external API? =
 
@@ -59,6 +59,16 @@ Yes. Use `[avl_badge]` in Divi, Elementor, Beaver Builder, Avada, Bricks, Oxygen
 1. Settings page for enabling routes, selecting post types, and configuring discovery options.
 
 == Changelog ==
+
+= 0.2.0 =
+
+* @state now includes a `content` field: block-rendered, tag-stripped body text (~220 words) so block-built pages (Gutenberg, Divi 5, classic) carry real content, not just a short excerpt.
+* Excerpt fallback is now block-aware (renders blocks before extracting), fixing empty excerpts on block / page-builder content.
+* Password-protected posts now omit body and excerpt text, preserving surface-equivalence with the anonymous human view.
+* Taxonomy term names in @state.taxonomies are now HTML-entity decoded.
+* New `avl_agent_view_rendered_text` filter lets membership / visibility plugins redact body text (AVL renders blocks directly and does not run the the_content filter chain).
+* Body extraction is memoized per request and preserves word boundaries across block edges; the auto-excerpt is dropped when full content is present (no triplicated prose); password-protected @context no longer reveals the publish date.
+* Serializer now quotes scalars that would otherwise parse back as a boolean, number, or null.
 
 = 0.1.0 =
 

@@ -3,7 +3,7 @@
  * Plugin Name: AVL Agent View Layer
  * Plugin URI: https://github.com/frontier-infra/avl
  * Description: Publishes Agent View Layer companions for public WordPress content at /.agent, /path.agent, and /agent.txt.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Author: Frontier Infra
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AVL_WP_VERSION', '0.1.0' );
+define( 'AVL_WP_VERSION', '0.2.0' );
 define( 'AVL_WP_OPTION', 'avl_agent_view_layer_options' );
 define( 'AVL_WP_AGENT_ROOT', '__root__' );
 define( 'AVL_WP_CONTENT_TYPE', 'text/agent-view; version=1; charset=utf-8' );
@@ -805,9 +805,21 @@ function avl_wp_build_post_document( string $human_path, WP_Post $post ): array 
 		'published'  => get_post_time( DATE_ATOM, false, $post ),
 		'modified'   => get_post_modified_time( DATE_ATOM, false, $post ),
 		'url'        => get_permalink( $post ),
-		'excerpt'    => avl_wp_excerpt( $post ),
-		'taxonomies' => avl_wp_taxonomy_state( $post ),
 	);
+
+	$excerpt = avl_wp_excerpt( $post );
+	$body    = avl_wp_body( $post );
+
+	// An author-written excerpt is always kept; the auto-extracted one is dropped when
+	// the fuller @state.content is present, so the lead prose is not triplicated.
+	if ( '' !== $excerpt && ( has_excerpt( $post ) || '' === $body ) ) {
+		$state['excerpt'] = $excerpt;
+	}
+	if ( '' !== $body ) {
+		$state['content'] = $body;
+	}
+
+	$state['taxonomies'] = avl_wp_taxonomy_state( $post );
 
 	$actions = array(
 		array(
@@ -854,15 +866,78 @@ function avl_wp_build_post_document( string $human_path, WP_Post $post ): array 
 	);
 }
 
-function avl_wp_excerpt( WP_Post $post ): string {
-	$excerpt = has_excerpt( $post )
-		? $post->post_excerpt
-		: wp_trim_words( wp_strip_all_tags( strip_shortcodes( $post->post_content ) ), 40 );
+/**
+ * Plain-text rendering of a post's body, anonymous-safe.
+ *
+ * Renders registered blocks (Gutenberg, Divi 5, etc.) so block-built pages are not
+ * empty, then strips markup. Shortcodes are stripped, NOT executed, to avoid side
+ * effects or private-data injection. Password-protected content is omitted entirely:
+ * an anonymous visitor sees the password form, not the body (spec 10.5 surface
+ * equivalence). Only ever called for published public posts.
+ */
+function avl_wp_rendered_text( WP_Post $post ): string {
+	static $cache = array();
+	if ( array_key_exists( $post->ID, $cache ) ) {
+		return $cache[ $post->ID ];
+	}
 
-	return html_entity_decode( wp_strip_all_tags( $excerpt ), ENT_QUOTES, get_bloginfo( 'charset' ) );
+	if ( '' !== (string) $post->post_password ) {
+		return $cache[ $post->ID ] = '';
+	}
+
+	$content = (string) $post->post_content;
+	if ( '' === trim( $content ) ) {
+		return $cache[ $post->ID ] = '';
+	}
+
+	$content = do_blocks( $content );
+	$content = strip_shortcodes( $content );
+	// Space before every tag so adjacent block/element text does not fuse into one word.
+	$content = wp_strip_all_tags( str_replace( '<', ' <', $content ) );
+	$content = html_entity_decode( $content, ENT_QUOTES, get_bloginfo( 'charset' ) );
+	$content = trim( (string) preg_replace( '/\s+/', ' ', $content ) );
+
+	/**
+	 * Filter AVL's plain-text body extraction. Membership/visibility plugins that
+	 * gate content through the_content can redact here, since AVL renders blocks
+	 * directly and does not run the the_content filter chain.
+	 *
+	 * @param string  $content Extracted plain-text body.
+	 * @param WP_Post $post    Source post.
+	 */
+	$content = (string) apply_filters( 'avl_agent_view_rendered_text', $content, $post );
+
+	return $cache[ $post->ID ] = $content;
+}
+
+/**
+ * Capped block-rendered body text for @state.content (~220 words).
+ */
+function avl_wp_body( WP_Post $post ): string {
+	return wp_trim_words( avl_wp_rendered_text( $post ), 220, '…' );
+}
+
+function avl_wp_excerpt( WP_Post $post ): string {
+	if ( '' !== (string) $post->post_password ) {
+		return '';
+	}
+
+	// avl_wp_rendered_text() already strips tags + decodes entities; decode the manual
+	// excerpt branch once here so each source is decoded exactly once (no double decode).
+	$text = has_excerpt( $post )
+		? html_entity_decode( wp_strip_all_tags( $post->post_excerpt ), ENT_QUOTES, get_bloginfo( 'charset' ) )
+		: avl_wp_rendered_text( $post );
+
+	return wp_trim_words( $text, 40, '…' );
 }
 
 function avl_wp_context( WP_Post $post, string $type_label, string $title ): string {
+	// Password-protected: an anonymous visitor sees only the password form (no date),
+	// so emit a neutral line rather than the publish-date fallback.
+	if ( '' !== (string) $post->post_password ) {
+		return ucfirst( $type_label ) . ' "' . $title . '" (password protected).';
+	}
+
 	$excerpt = avl_wp_excerpt( $post );
 	if ( '' !== $excerpt ) {
 		return ucfirst( $type_label ) . ' "' . $title . '": ' . $excerpt;
@@ -887,7 +962,7 @@ function avl_wp_taxonomy_state( WP_Post $post ): array {
 		$result[ $taxonomy ] = array_values(
 			array_map(
 				static function ( $term ) {
-					return $term->name;
+					return html_entity_decode( $term->name, ENT_QUOTES, get_bloginfo( 'charset' ) );
 				},
 				$terms
 			)
@@ -1248,7 +1323,9 @@ function avl_wp_scalar( $value ): string {
 	}
 
 	$string = (string) $value;
-	if ( preg_match( '/[",\r\n]/', $string ) ) {
+	// Quote when the value contains TOON-significant chars, OR when a plain string
+	// would otherwise parse back as a bool / null / number (type-confusion).
+	if ( preg_match( '/[",\r\n]/', $string ) || preg_match( '/^(true|false|~|-?\d+(\.\d+)?([eE][+-]?\d+)?)$/', $string ) ) {
 		return '"' . str_replace( array( '\\', '"' ), array( '\\\\', '\\"' ), $string ) . '"';
 	}
 
