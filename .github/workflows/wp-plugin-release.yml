@@ -1,0 +1,68 @@
+name: WP Plugin Release
+
+# Cuts a GitHub Release for the WordPress plugin whenever an `avl-wp-v*` tag is pushed.
+# The release asset (the built plugin zip) is what the plugin's bundled update checker
+# downloads for the admin "Update Now" flow. Repo-level tags (vX.Y.Z) are unaffected.
+
+on:
+  push:
+    tags:
+      - 'avl-wp-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive + verify version
+        id: ver
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"             # avl-wp-v0.3.0 | avl-wp-v0.3.0-rc.1
+          VERSION="${TAG#avl-wp-v}"            # 0.3.0 | 0.3.0-rc.1
+          CORE="${VERSION%%-*}"               # 0.3.0
+          PLUGIN_FILE="plugins/WordPress/avl-agent-view-layer/avl-agent-view-layer.php"
+          HEADER_VERSION="$(grep -iE '^\s*\*?\s*Version:' "$PLUGIN_FILE" | head -1 | sed -E 's/.*Version:\s*//I' | tr -d '[:space:]')"
+          echo "tag=$TAG version=$VERSION header=$HEADER_VERSION"
+          if [ "$HEADER_VERSION" != "$VERSION" ] && [ "$HEADER_VERSION" != "$CORE" ]; then
+            echo "::error::Plugin header Version ($HEADER_VERSION) != tag ($VERSION). Bump the header before tagging."
+            exit 1
+          fi
+          PRERELEASE=false
+          case "$VERSION" in *-*) PRERELEASE=true ;; esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Build plugin zip
+        run: |
+          set -euo pipefail
+          chmod +x plugins/WordPress/scripts/package.sh
+          ./plugins/WordPress/scripts/package.sh
+          ZIP="plugins/WordPress/dist/avl-agent-view-layer.zip"
+          test -f "$ZIP"
+          # The updater is useless if PUC didn't make it into the asset.
+          unzip -l "$ZIP" | grep -q 'lib/plugin-update-checker/Puc/v5p7/PucFactory.php'
+
+      - name: Extract changelog for the release body
+        id: notes
+        run: |
+          set -euo pipefail
+          README="plugins/WordPress/avl-agent-view-layer/readme.txt"
+          CORE="${GITHUB_REF_NAME#avl-wp-v}"; CORE="${CORE%%-*}"
+          BODY="$(awk -v v="= $CORE =" '$0==v{grab=1;next} /^= [0-9]/&&grab{exit} grab{print}' "$README" || true)"
+          [ -n "$BODY" ] || BODY="AVL WordPress plugin ${GITHUB_REF_NAME#avl-wp-v}."
+          { echo "body<<EOF"; echo "$BODY"; echo "EOF"; } >> "$GITHUB_OUTPUT"
+
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2   # TODO: pin to a commit SHA for supply-chain hardening
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: AVL WordPress Plugin ${{ steps.ver.outputs.version }}
+          body: ${{ steps.notes.outputs.body }}
+          prerelease: ${{ steps.ver.outputs.prerelease }}
+          files: plugins/WordPress/dist/avl-agent-view-layer.zip
+          fail_on_unmatched_files: true
