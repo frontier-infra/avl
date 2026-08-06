@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Status | Draft v0.1 |
-| Authors | Argent OS |
+| Authors | Frontier Infra |
 | Date | 2026-04-16 |
 | Companion | `avl-agent-view-layer.md` (format spec) |
 | | `avl-auth-thesis.md` (auth model) |

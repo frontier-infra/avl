@@ -40,4 +40,4 @@ fetcher_hints:
 
 # Spec
 spec: /specs/avl-agent-view-layer.md
-contact: agent-views@argentos.ai
+contact: https://frontierinfra.org/support

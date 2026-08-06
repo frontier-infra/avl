@@ -860,9 +860,9 @@ We're looking for early adopters, framework implementations, and real-world feed
 
 ---
 
-## Relationship to Argent OS
+## Relationship to Frontier Infra
 
-AVL is the substrate that Argent OS uses to drive any host application. Where human users navigate via DOM and CSS, Argent OS navigates via AVL routes and action affordances. An app — or a static site — that ships AVL is a site Argent OS can drive without scraping, training, or human translation.
+AVL is the Frontier Infra standard for exposing producer-owned application state and affordances to agents. Where human users navigate via DOM and CSS, agents can navigate via AVL routes and action affordances. An app — or a static site — that ships AVL is a site an authorized agent can drive without scraping, training, or human translation.
 
 ---
 

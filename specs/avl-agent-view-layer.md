@@ -6,7 +6,7 @@
 | Field | Value |
 |---|---|
 | Status | Draft v0.1 |
-| Authors | Argent OS |
+| Authors | Frontier Infra |
 | Date | 2026-04-16 |
 | Reference impl | Next.js 16 / App Router |
 | Companion docs | `avl-thesis.md` (problem/solution thesis) |
@@ -813,11 +813,12 @@ unambiguous when paired with "agent."
 
 ---
 
-## 15. Relationship to Argent OS
+## 15. Relationship to Frontier Infra
 
-AVL is the substrate Argent OS uses to drive any host application. Where
-human users navigate via DOM and CSS, Argent OS navigates via AVL routes
-and action affordances. **An app that ships AVL is an app Argent OS can
-drive without scraping, training, or human-in-the-loop translation.**
+AVL is the Frontier Infra standard for exposing producer-owned application
+state and affordances to agents. Where human users navigate via DOM and CSS,
+agents can navigate via AVL routes and action affordances. **An app that
+ships AVL is an app an authorized agent can drive without scraping, training,
+or human-in-the-loop translation.**
 
 This document defines the contract between the two halves.
