@@ -4,7 +4,9 @@ All notable changes to AVL are documented here.
 
 The format follows Keep a Changelog style, and this project uses semantic versioning for the root npm package.
 
-## WordPress plugin [0.2.1] - 2026-10-09
+## WordPress plugin [0.3.1] - 2026-10-09
+
+Version note: released as 0.3.1, not 0.2.1, so it sorts above the existing avl-wp-v0.3.0 release and the plugin's update checker offers it.
 
 ### Fixed
 
