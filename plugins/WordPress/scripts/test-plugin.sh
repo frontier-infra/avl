@@ -44,7 +44,7 @@ root_body="$(mktemp)"
 curl -fsS -D "$root_headers" "$BASE/.agent" -o "$root_body"
 grep -qi 'content-type: text/agent-view; version=1' "$root_headers"
 grep -q '@state' "$root_body"
-grep -q 'recent:' "$root_body"
+grep -Eq 'recent(\[|:)' "$root_body"
 
 page_headers="$(mktemp)"
 page_body="$(mktemp)"
