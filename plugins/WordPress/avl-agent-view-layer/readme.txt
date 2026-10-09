@@ -4,7 +4,7 @@ Tags: ai, agents, accessibility, structured-data, cms
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,10 @@ Yes. Use `[avl_badge]` in Divi, Elementor, Beaver Builder, Avada, Bricks, Oxygen
 1. Settings page for enabling routes, selecting post types, and configuring discovery options.
 
 == Changelog ==
+
+= 0.2.1 =
+* Merge Vary: Accept on negotiable human pages.
+* Encode uniform scalar rows as compact TOON tables.
 
 = 0.2.0 =
 

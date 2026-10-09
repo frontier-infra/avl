@@ -4,6 +4,13 @@ All notable changes to AVL are documented here.
 
 The format follows Keep a Changelog style, and this project uses semantic versioning for the root npm package.
 
+## WordPress plugin [0.2.1] - 2026-10-09
+
+### Fixed
+
+- Merge `Vary: Accept` on human pages that support agent view negotiation.
+- Serialize uniform scalar row lists as compact TOON tables, preserving mixed row encoding.
+
 ## [0.2.0] - 2026-05-02
 
 ### Added

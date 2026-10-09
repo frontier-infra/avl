@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/frontier-infra/avl
  * Update URI: https://github.com/frontier-infra/avl
  * Description: Publishes Agent View Layer companions for public WordPress content at /.agent, /path.agent, and /agent.txt.
- * Version: 0.2.0
+ * Version: 0.2.1
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Author: Frontier Infra
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AVL_WP_VERSION', '0.2.0' );
+define( 'AVL_WP_VERSION', '0.2.1' );
 define( 'AVL_WP_OPTION', 'avl_agent_view_layer_options' );
 define( 'AVL_WP_AGENT_ROOT', '__root__' );
 define( 'AVL_WP_CONTENT_TYPE', 'text/agent-view; version=1; charset=utf-8' );
@@ -40,7 +40,7 @@ add_action( 'wp_footer', 'avl_wp_render_footer_discovery' );
 add_shortcode( 'avl_badge', 'avl_wp_badge_shortcode' );
 
 /**
- * GitHub-releases self-updater — surfaces "Update Now" on the Plugins screen.
+ * GitHub-releases self-updater: surfaces "Update Now" on the Plugins screen.
  *
  * AVL ships from a monorepo, so the checker (1) downloads the built release ASSET zip,
  * never the repo source zipball; (2) only considers this plugin's own releases (tag
@@ -474,6 +474,10 @@ function avl_wp_render_agent_response(): void {
 		avl_wp_render_document_for_path( $human_path );
 	}
 
+	if ( avl_wp_should_advertise_current_page() ) {
+		avl_wp_send_vary_accept();
+	}
+
 	if ( avl_wp_accepts_agent_view() && avl_wp_should_advertise_current_page() ) {
 		avl_wp_render_document_for_path( avl_wp_current_human_path() );
 	}
@@ -490,10 +494,31 @@ function avl_wp_render_document_for_path( string $human_path ): void {
 	avl_wp_send_text_response( avl_wp_serialize_document( $document ), AVL_WP_CONTENT_TYPE );
 }
 
+/** Merge negotiation into existing Vary fields without duplicate tokens. */
+function avl_wp_send_vary_accept(): void {
+	$tokens = array();
+	foreach ( headers_list() as $field ) {
+		if ( 0 !== stripos( $field, 'Vary:' ) ) {
+			continue;
+		}
+		foreach ( explode( ',', substr( $field, 5 ) ) as $token ) {
+			$token = trim( $token );
+			if ( '' !== $token ) {
+				$tokens[ strtolower( $token ) ] = $token;
+			}
+		}
+	}
+	if ( isset( $tokens['*'] ) ) {
+		header( 'Vary: *' );
+		return;
+	}
+	$tokens['accept'] = 'Accept';
+	header( 'Vary: ' . implode( ', ', $tokens ) );
+}
+
 function avl_wp_send_text_response( string $body, string $content_type ): void {
 	nocache_headers();
 	header( 'Content-Type: ' . $content_type );
-	header( 'Vary: Accept', false );
 	echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Serialized text/agent-view body is escaped by the serializer.
 	exit;
 }
@@ -530,10 +555,15 @@ function avl_wp_accepts_agent_view(): bool {
 
 function avl_wp_is_agent_or_manifest_request(): bool {
 	$path = avl_wp_current_human_path();
-	return '/agent.txt' === $path || avl_wp_ends_with( $path, '.agent' );
+	return in_array( $path, array( '/agent.txt', '/llms.txt', '/lm.txt' ), true ) || avl_wp_ends_with( $path, '.agent' );
 }
 
 function avl_wp_should_advertise_current_page(): bool {
+	$agent_path = get_query_var( 'avl_agent_view', null );
+	if ( get_query_var( 'avl_agent_manifest' ) || get_query_var( 'avl_lm_manifest' ) || ( null !== $agent_path && '' !== $agent_path ) ) {
+		return false;
+	}
+
 	if ( ! avl_wp_enabled() ) {
 		return false;
 	}
@@ -557,6 +587,7 @@ function avl_wp_send_discovery_header(): void {
 		return;
 	}
 
+	avl_wp_send_vary_accept();
 	$human_path = avl_wp_current_human_path();
 	header( 'Link: <' . esc_url_raw( $human_path ) . '>; rel="canonical", </agent.txt>; rel="agent-manifest"; type="text/plain"', false );
 }
@@ -1341,6 +1372,37 @@ function avl_wp_encode_named( string $name, $value ): array {
 	}
 
 	if ( avl_wp_array_is_list( $value ) ) {
+		$keys = is_array( $value[0] ) ? array_keys( $value[0] ) : array();
+		$tabular = ! empty( $keys );
+		foreach ( $keys as $key ) {
+			if ( ! is_string( $key ) || ! preg_match( '/^[A-Za-z_][A-Za-z0-9_-]*$/', $key ) ) {
+				$tabular = false;
+			}
+		}
+		foreach ( $value as $row ) {
+			if ( ! $tabular || ! is_array( $row ) || count( $row ) !== count( $keys ) || array_diff( $keys, array_keys( $row ) ) ) {
+				$tabular = false;
+				break;
+			}
+			foreach ( $row as $cell ) {
+				if ( null !== $cell && ! is_scalar( $cell ) ) {
+					$tabular = false;
+					break;
+				}
+			}
+		}
+		if ( $tabular ) {
+			$lines = array( $name . '[' . count( $value ) . ']{' . implode( ',', $keys ) . '}:' );
+			foreach ( $value as $row ) {
+				$cells = array();
+				foreach ( $keys as $key ) {
+					$cells[] = '' === $row[ $key ] ? '""' : avl_wp_scalar( $row[ $key ] );
+				}
+				$lines[] = '  ' . implode( ',', $cells );
+			}
+			return $lines;
+		}
+
 		$has_nested = false;
 		foreach ( $value as $item ) {
 			if ( is_array( $item ) ) {
